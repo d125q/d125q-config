@@ -1,0 +1,4 @@
+[submodule "z.lua"]
+	path = .config/zsh/z.lua
+	url = git@github.com:skywind3000/z.lua.git
+	branch = master

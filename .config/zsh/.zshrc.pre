@@ -1,0 +1,17 @@
+# -*- mode: sh; -*-
+
+## * Enable command-not-found
+COMMAND_NOT_FOUND=1
+GRML_ZSH_CNF_HANDLER=/usr/lib/command-not-found
+
+## * Prompt (grml-large)
+GRMLPROMPT=1
+GRML_DISPLAY_BATTERY=1
+
+## * Aliases and functions
+GRML_NO_APT_ALIASES=1
+fpath=(${ZDOTDIR:-$HOME}/zsh-functions
+       ${ZDOTDIR:-$HOME}/zsh-completions/src
+       $HOME/.local/share/zsh/site-functions
+       $fpath
+       /usr/share/zsh/vendor-completions)

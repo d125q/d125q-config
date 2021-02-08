@@ -1,0 +1,85 @@
+# -*- mode: sh; -*-
+
+## * Options
+setopt nonomatch                # Try to avoid ‘zsh: no matches found...’
+setopt NO_clobber               # Warn if file exists
+setopt histallowclobber         # Add ‘|’ to output redirections in the history
+setopt printexitvalue           # Alert if something failed
+setopt interactivecomments      # Allow comments even in interactive shells
+stty -ixon                      # CTRL-S will no longer freeze the terminal
+
+## * Prompt (grml-large)
+function virtual_env_prompt {
+    REPLY=${VIRTUAL_ENV+(${VIRTUAL_ENV:t}) }
+}
+
+grml_theme_add_token virtual-env -f virtual_env_prompt '%F{magenta}' '%f'
+grml_theme_add_token datetime '%D{%F %T %Z}' '%F{yellow}' '%f'
+declare -a left_items=(newline
+                       rc jobs history shell-level change-root datetime
+                       newline
+                       user at host path virtual-env vcs
+                       newline
+                       percent)
+declare -a right_items=(sad-smiley battery)
+
+zstyle ':prompt:grml-large:left:setup' items $left_items
+zstyle ':prompt:grml-large:right:setup' items $right_items
+
+## * Syntax highlighting
+source ${ZDOTDIR:-$HOME}/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+## * Completions and key bindings for fzf
+if [[ -v FZF_HOME ]] ; then
+    source $FZF_HOME/shell/completion.zsh
+    source $FZF_HOME/shell/key-bindings.zsh
+    bindkey '^R' history-incremental-pattern-search-backward
+    bindkey '^T' transpose-chars
+    bindkey '\ec' capitalize-word
+    bindkey '^X[' fzf-history-widget
+    bindkey '^X]' fzf-file-widget
+    bindkey '^X\' fzf-cd-widget
+fi
+
+## * Completions for pip and pipenv
+if [[ -v commands[pyenv] ]] ; then
+    pyenv which pip &> /dev/null && eval "$( pip completion --zsh )"
+    pyenv which pipenv &> /dev/null && eval "$( pipenv --completion )"
+fi
+
+## * Initialization of z.lua
+typeset Z_LUA_PATH=${ZDOTDIR:-$HOME}/z.lua/z.lua
+if [[ -v commands[lua] && -f $Z_LUA_PATH ]] ; then
+    eval "$( lua $Z_LUA_PATH --init zsh enhanced once fzf )"
+fi
+unset Z_LUA_PATH
+
+## * Aliases and functions
+
+## ** exa -- a modern version of ls
+if [[ -v commands[exa] ]] ; then
+    alias ea='command exa -la'
+    alias el='command exa -l'
+    alias eh='command exa -hla'
+    alias e='command exa -l'
+fi
+
+## ** sudo
+if [[ -v commands[sudo] && -v commands[zpass] ]] ; then
+    alias sudo='SUDO_ASKPASS=${commands[zpass]} sudo -A'
+fi
+
+## ** Download albums from Bandcamp using youtube-dl
+function bandcamp-dl {
+    youtube-dl -o '%(artist)s_%(album)s_%(track_number)02d_%(track)s.%(ext)s' $@
+}
+
+## ** Run command in each subdirectory
+function in-subdirs {
+    for subdir in *(/) ; do
+        pushd -q $subdir
+        printf 'Running "%s" in "%s"\n' "$*" "$( pwd )"
+        $*
+        popd -q
+    done
+}
