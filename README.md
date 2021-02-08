@@ -37,7 +37,7 @@ environment for the entire PAM session.  Currently, it sets:
 
 ### Zsh
 
-1. A new version of Zsh is required – feel free to build [from
+1. Requires a new version of Zsh – feel free to build [from
    source][zsh-repo]
 2. `ZDOTDIR` should be configured to point to `$HOME/.config/zsh` as
    in [PAM environment](#pam-environment)
