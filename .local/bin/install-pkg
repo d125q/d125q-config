@@ -198,6 +198,13 @@ function install-cppcheck {
     pushd -q build
     cmake --build . --target install
     popd -q
+    pushd -q htmlreport
+    python setup.py install
+    popd -q
+}
+
+function stow-cppcheck {
+    stow -d $pkgdir -R $pkgname
 }
 
 ## ** ctags
