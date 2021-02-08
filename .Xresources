@@ -1,0 +1,11 @@
+Emacs.font: Iosevka Custom Condensed-18
+Emacs.paneFont: -*-terminus-*-r-*-*-18-*-*-*-*-*-*-*
+Emacs.selectionFont: -*-terminus-*-r-*-*-16-*-*-*-*-*-*-*
+
+Emacs.cursorBlink: off
+Emacs.horizontalScrollBars: off
+Emacs.verticalScrollBars: off
+Emacs.menuBar: off
+Emacs.toolBar: off
+
+Emacs.fullscreen: maximized
