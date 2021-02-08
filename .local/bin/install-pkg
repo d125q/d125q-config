@@ -57,6 +57,10 @@ srcdir=${opts[-srcdir]:-$HOME/.local/src}
 altdir=${opts[-altdir]:-$HOME/Alternatives}
 admindir=${opts[-admindir]:-$HOME/.var/lib/dpkg}
 
+for dir in $pkgdir $cfgdir $srcdir $altdir $admindir ; do
+    mkdir -p $dir
+done
+
 prefix=$pkgdir/..
 bindir=$prefix/bin
 datadir=$prefix/share
@@ -591,7 +595,6 @@ for pattern in $@ ; do
         cfgzdotdir=$cfgprefix/.config/zsh
 
         if [[ ! -d $srcdir/$pkgname ]] ; then
-            mkdir -p $srcdir
             pushd -q $srcdir
             echo "Cloning $pkgname..."
             clone-$pkgname
