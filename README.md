@@ -21,6 +21,7 @@ $ stow d125q-config
 - [Alacritty](.config/alacritty/alacritty.yml)
 - [`install-pkg`](#install-pkg)
 - The [PAM environment](#pam-environment)
+- [tmux](.tmux.conf)
 - [X resources](.Xresources)
 - [Zsh](#zsh)
 
@@ -55,9 +56,9 @@ the entire PAM session.
 
 ### Zsh
 
-- A new version of Zsh is required – feel free to build [from source][zsh-repo]
-- `ZDOTDIR` should be configured to point to `$HOME/.config/zsh`
-- `.zshrc` should come from [grml-etc-core][grml-etc-core-repo]
+- A new version of Zsh is required – feel free to build [from source][zsh-repo].
+- `ZDOTDIR` should be configured to point to `$HOME/.config/zsh`.
+- `.zshrc` should come from [grml-etc-core][grml-etc-core-repo].
 
 
 [git-homepage]: https://git-scm.com/ "Homepage of Git"
