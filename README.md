@@ -28,7 +28,7 @@ There are configuration files for the following components:
 - [Zsh](#zsh)
 - [Alacritty](#alacritty)
 
-### [`install-pkg`](.local/bin/install-pkg)
+### `install-pkg`
 
 [`install-pkg`](.local/bin/install-pkg) is a script to build and install
 packages locally.  It relies on [GNU Stow][stow-homepage].
