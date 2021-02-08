@@ -1,0 +1,519 @@
+#!/usr/bin/env zsh
+
+## * Usage, option parsing, and global variables
+
+read -r -d '' usage <<EOF
+Usage: $( basename $0 ) [OPTION]... PATTERN...
+Install packages whose names match PATTERN from their local repositories.
+Options:
+    -noupdate      do not update from the remote repositories
+    -nobuild       do not build the packages
+    -nostow        do not stow the packages or their configuration files
+    -pkgdir DIR    directory where packages will be installed
+                       (default: \$HOME/.local/stow)
+    -cfgdir DIR    directory where configuration files will be installed
+                       (default: \$HOME/stow)
+    -srcdir DIR    directory containing the local repositories
+                       (default: \$HOME/.local/src)
+    -altdir DIR    directory containing the alternatives
+                       (default: \$HOME/Alternatives)
+    -admindir DIR  directory containing the administrative information
+                       (default: \$HOME/.var/lib/dpkg)
+EOF
+set -euo pipefail
+typeset -a pkgnames=(
+    R
+    alacritty
+    check
+    ctags
+    emacs
+    fontforge
+    fontship
+    git
+    grml-etc-core
+    libgit2
+    pyenv
+    rofi
+    tmux
+    vim
+    zsh
+    zsh-completions
+    zsh-syntax-highlighting
+)
+typeset -A opts
+zparseopts -D -E -F -A opts - h help                 \
+           noupdate nobuild nostow                   \
+           pkgdir: cfgdir: srcdir: altdir: admindir:
+
+if [[ -v opts[-h] || -v opts[-help] ]] ; then
+    echo $usage
+    exit 0
+fi
+
+pkgdir=${opts[-pkgdir]:-$HOME/.local/stow}
+cfgdir=${opts[-cfgdir]:-$HOME/stow}
+srcdir=${opts[-srcdir]:-$HOME/.local/src}
+altdir=${opts[-altdir]:-$HOME/Alternatives}
+admindir=${opts[-admindir]:-$HOME/.var/lib/dpkg}
+
+prefix=$pkgdir/..
+bindir=$prefix/bin
+datadir=$prefix/share
+mandir=$datadir/man
+man1dir=$mandir/man1
+infodir=$datadir/info
+applicationsdir=$datadir/applications
+iconsdir=$datadir/icons/hicolor
+
+## * Functions to update, build, install, and stow packages
+
+## ** R
+
+function update-R {
+    svn update
+    ./tools/rsync-recommended
+}
+
+function build-R {
+    ./configure --prefix=$pkgprefix
+    make
+    make info
+    make pdf
+}
+
+function install-R {
+    make install
+    make install-info
+    make install-pdf
+    rm $pkginfodir/dir
+}
+
+function stow-R {
+    stow -d $pkgdir -R $pkgname
+    for pkginfofile in $pkginfodir/*.info*.gz ; do
+        install-info --info-dir=$infodir $pkginfofile
+    done
+}
+
+## ** alacritty
+
+function update-alacritty {
+    git pull --ff-only
+}
+
+function build-alacritty {
+    cargo build --release
+}
+
+function install-alacritty {
+    gzip -c extra/alacritty.man >| extra/alacritty.1.gz
+    install -m 755 -D target/release/alacritty \
+            -t $pkgbindir
+    install -m 644 -D extra/alacritty.1.gz \
+            -t $pkgman1dir
+    install -m 644 -D extra/logo/alacritty-term.svg \
+            $pkgiconsdir/64x64/apps/Alacritty.svg
+    install -m 644 -D extra/completions/_alacritty \
+            -t $cfgzdotdir/zsh-functions
+    desktop-file-install extra/linux/Alacritty.desktop \
+                         --dir=$pkgapplicationsdir
+}
+
+function stow-alacritty {
+    local altname=x-terminal-emulator
+    local altlink=$pkgbindir/$altname altslavename=$altname.1.gz
+    local altslavelink=$pkgman1dir/$altslavename
+    update-alternatives                                                \
+        --altdir $altdir --admindir $admindir                          \
+        --install $altlink $altname $pkgbindir/alacritty 50            \
+        --slave $altslavelink $altslavename $pkgman1dir/alacritty.1.gz
+    stow -d $pkgdir -R $pkgname
+    stow -d $cfgdir -R $pkgname
+    tic -xe alacritty,alacritty-direct extra/alacritty.info
+    update-desktop-database $applicationsdir
+}
+
+## ** check
+
+function update-check {
+    git pull --ff-only
+}
+
+function build-check {
+    if [[ ! -x ./configure ]] ; then
+        autoreconf --install
+    fi
+    ./configure --prefix=$pkgprefix
+    make
+}
+
+function install-check {
+    make install
+    rm $pkginfodir/dir
+}
+
+function stow-check {
+    stow -d $pkgdir -R $pkgname
+    for pkginfofile in $pkginfodir/*.info ; do
+        install-info --info-dir=$infodir $pkginfofile
+    done
+}
+
+## ** ctags
+
+function update-ctags {
+    git pull --ff-only
+}
+
+function build-ctags {
+    if [[ ! -x ./configure ]] ; then
+        ./autogen.sh
+    fi
+    ./configure --prefix=$pkgprefix
+    make
+}
+
+function install-ctags {
+    make install
+}
+
+function stow-ctags {
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** emacs
+
+function update-emacs {
+    git pull --ff-only
+}
+
+function build-emacs {
+    if [[ ! -x ./configure ]] ; then
+        ./autogen.sh autoconf
+    fi
+    ./configure --prefix=$pkgprefix    \
+                --with-x               \
+                --with-x-toolkit=lucid \
+                --with-cairo           \
+                --with-json            \
+                --with-imagemagick
+    make bootstrap
+    make docs
+}
+
+function install-emacs {
+    make systemdunitdir=$cfgprefix/.config/systemd/user install
+    rm $pkginfodir/dir
+    mv $pkgbindir/ctags $pkgbindir/ctags.emacs
+    mv $pkgman1dir/ctags.1.gz $pkgman1dir/ctags.emacs.1.gz
+}
+
+function stow-emacs {
+    stow -d $pkgdir -R $pkgname
+    for pkginfofile in $pkginfodir/*.info*.gz ; do
+        install-info --info-dir=$infodir $pkginfofile
+    done
+    stow -d $cfgdir -R $pkgname
+    if read -q '?Restart the GNU Emacs daemon? ' ; then
+        echo
+        systemctl --user daemon-reload
+        systemctl --user restart emacs.service
+    else
+        echo
+    fi
+}
+
+## ** fontforge
+
+function update-fontforge {
+    git pull --ff-only
+}
+
+function build-fontforge {
+    mkdir -p build
+    pushd -q build
+    typeset -TU PYENV_PREFIX pyenv_prefix
+    PYENV_PREFIX=$( pyenv prefix )
+    cmake -GNinja                                       \
+          -DCMAKE_PREFIX_PATH=${(j:;:)pyenv_prefix}     \
+          -DCMAKE_INSTALL_PREFIX=$pkgprefix             \
+          ..
+    ninja
+    popd -q
+}
+
+function install-fontforge {
+    pushd -q build
+    ninja install
+    popd -q
+}
+
+function stow-fontforge {
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** fontship
+
+function update-fontship {
+    git pull --ff-only
+}
+
+function build-fontship {
+    source ${WORKON_HOME:-$HOME/.virtualenvs}/fontship/bin/activate
+    pip install -U -r requirements.txt
+    if [[ ! -x ./configure ]] ; then
+        ./bootstrap.sh
+    fi
+    ./configure --prefix=$pkgprefix
+    make
+    deactivate
+}
+
+function install-fontship {
+    local bashcompletiondir=$pkgprefix/share/bash-completions
+    make bashcompletiondir=$bashcompletiondir install
+}
+
+function stow-fontship {
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** git
+
+function update-git {
+    git pull --ff-only
+}
+
+function build-git {
+    if [[ ! -x ./configure ]] ; then
+        make configure
+    fi
+    ./configure --prefix=$pkgprefix
+    make all doc
+}
+
+function install-git {
+    make install install-doc install-html
+}
+
+function stow-git {
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** grml-etc-core
+
+function update-grml-etc-core {
+    git pull --ff-only
+}
+
+function build-grml-etc-core {
+    echo "Nothing to build."
+}
+
+function install-grml-etc-core {
+    mkdir -p $cfgprefix
+    install -m 644 -D etc/vim/vimrc $cfgprefix/.vimrc
+    install -m 644 -D etc/zsh/zshrc $cfgprefix/.config/zsh/.zshrc
+}
+
+function stow-grml-etc-core {
+    stow -d $cfgdir -R $pkgname
+}
+
+## ** pyenv
+
+function update-pyenv {
+    git pull --ff-only
+}
+
+function build-pyenv {
+    echo "Nothing to build."
+}
+
+function install-pyenv {
+    mkdir -p $cfgprefix/.pyenv
+    rsync -avu --exclude .git/ ./ $cfgprefix/.pyenv
+}
+
+function stow-pyenv {
+    stow -d $cfgdir -R $pkgname
+}
+
+## ** rofi
+
+function update-rofi {
+    git pull --ff-only
+}
+
+function build-rofi {
+    meson setup build --prefix $pkgprefix
+    ninja -C build
+}
+
+function install-rofi {
+    ninja -C build install
+}
+
+function stow-rofi {
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** tmux
+
+function update-tmux {
+    git pull --ff-only
+}
+
+function build-tmux {
+    if [[ ! -x ./configure ]] ; then
+        ./autogen.sh
+    fi
+    ./configure --prefix=$pkgprefix
+    make
+}
+
+function install-tmux {
+    make install
+}
+
+function stow-tmux {
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** vim
+
+function update-vim {
+    git pull --ff-only
+}
+
+function build-vim {
+    ./configure --prefix=$pkgprefix        \
+                --with-features=huge       \
+                --enable-multibyte         \
+                --enable-luainterp=yes     \
+                --enable-perlinterp=yes    \
+                --enable-python3interp=yes \
+                --enable-rubyinterp=yes    \
+                --enable-tclinterp=yes     \
+                --enable-gui=gtk3          \
+                --enable-cscope
+    make
+}
+
+function install-vim {
+    make install
+}
+
+function stow-vim {
+    local altname altlink altslavename altslavelink
+    for altname in editor vi ; do
+        altlink=$pkgbindir/$altname
+        altslavename=$altname.1
+        altslavelink=$pkgman1dir/$altslavename
+        update-alternatives                                       \
+            --altdir $altdir --admindir $admindir                 \
+            --install $altlink $altname $pkgbindir/vim 50         \
+            --slave $altslavelink $altslavename $pkgman1dir/vim.1
+    done
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** zsh
+
+function update-zsh {
+    git pull --ff-only
+}
+
+function build-zsh {
+    if [[ ! -x ./configure ]] ; then
+        ./Util/preconfig
+    fi
+    ./configure --prefix=$pkgprefix
+    make
+}
+
+function install-zsh {
+    make install
+    make install.info
+    rm $infodir/dir
+}
+
+function stow-zsh {
+    stow -d $pkgdir -R $pkgname
+    for pkginfofile in $infodir/zsh.info* ; do
+        install-info --info-dir=$infodir $pkginfofile
+    done
+}
+
+## ** zsh-completions
+
+function update-zsh-completions {
+    git pull --ff-only
+}
+
+function build-zsh-completions {
+    echo "Nothing to build."
+}
+
+function install-zsh-completions {
+    mkdir -p $cfgzdotdir/$pkgname
+    rsync -avu ./src/ $cfgzdotdir/$pkgname
+}
+
+function stow-zsh-completions {
+    stow -d $cfgdir -R $pkgname
+}
+
+## ** zsh-syntax-highlighting
+
+function update-zsh-syntax-highlighting {
+    git pull --ff-only
+}
+
+function build-zsh-syntax-highlighting {
+    echo "Nothing to build."
+}
+
+function install-zsh-syntax-highlighting {
+    mkdir -p $cfgzdotdir/$pkgname
+    rsync -avu --exclude .git/ ./ $cfgzdotdir/$pkgname
+}
+
+function stow-zsh-syntax-highlighting {
+    stow -d $cfgdir -R $pkgname
+}
+
+## * Main program
+
+for pattern in $@ ; do
+    for pkgname in ${(M)pkgnames:#${~pattern}} ; do
+        pkgprefix=$pkgdir/$pkgname
+        pkgbindir=$pkgprefix/bin
+        pkgdatadir=$pkgprefix/share
+        pkgmandir=$pkgdatadir/man
+        pkgman1dir=$pkgmandir/man1
+        pkginfodir=$pkgdatadir/info
+        pkgapplicationsdir=$pkgdatadir/applications
+        pkgiconsdir=$pkgdatadir/icons/hicolor
+
+        cfgprefix=$cfgdir/$pkgname
+        cfgzdotdir=$cfgprefix/.config/zsh
+
+        pushd -q $srcdir/$pkgname
+        if [[ ! -v opts[-noupdate] ]] ; then
+            echo "Updating $pkgname..."
+            update-$pkgname
+        fi
+        if [[ ! -v opts[-nobuild] ]] ; then
+            echo "Building $pkgname..."
+            build-$pkgname
+        fi
+        echo "Installing $pkgname..."
+        install-$pkgname
+        if [[ ! -v opts[-nostow] ]] ; then
+            echo "Stowing $pkgname..."
+            stow-$pkgname
+        fi
+        popd -q
+    done
+done

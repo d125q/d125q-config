@@ -22,9 +22,34 @@ $ stow d125q-config
 
 There are configuration files for the following components:
 
+- [`install-pkg`](#install-pkg)
 - The [PAM environment](#pam-environment)
 - [Zsh](#zsh)
 - [Alacritty](#alacritty)
+
+### `install-pkg`
+
+`install-pkg` is a script to build and install packages locally.  It relies on
+[GNU Stow][stow-homepage].
+
+```
+Usage: install-pkg [OPTION]... PATTERN...
+Install packages whose names match PATTERN from their local repositories.
+Options:
+    -noupdate      do not update from the remote repositories
+    -nobuild       do not build the packages
+    -nostow        do not stow the packages or their configuration files
+    -pkgdir DIR    directory where packages will be installed
+                       (default: $HOME/.local/stow)
+    -cfgdir DIR    directory where configuration files will be installed
+                       (default: $HOME/stow)
+    -srcdir DIR    directory containing the local repositories
+                       (default: $HOME/.local/src)
+    -altdir DIR    directory containing the alternatives
+                       (default: $HOME/Alternatives)
+    -admindir DIR  directory containing the administrative information
+                       (default: $HOME/.var/lib/dpkg)
+```
 
 ### PAM environment
 
