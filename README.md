@@ -25,6 +25,7 @@ There are configuration files for the following components:
 
 - The [PAM environment](#pam-environment)
 - [Zsh](#zsh)
+- [Alacritty](#alacritty)
 
 ### PAM environment
 
@@ -44,3 +45,14 @@ environment for the entire PAM session.  Currently, it sets:
 
 [zsh-repo]: https://github.com/zsh-users/zsh "Git repository of Zsh"
 [grml-etc-core-repo]: https://github.com/grml/grml-etc-core "Git repository of grml-etc-core"
+
+### Alacritty
+
+1. Sets the `TERM` variable to `xterm-256` color
+2. Runs `zsh`
+3. Requires a custom build of [Iosevka][iosevka-repo], called `Iosevka
+   Custom Condensed`
+4. Configures the colors to a dark variant of [Gruvbox][gruvbox-repo]
+
+[iosevka-repo]: https://github.com/be5invis/Iosevka "Git repository of Iosevka"
+[gruvbox-repo]: https://github.com/briemens/gruvbox "Git repository of Gruvbox"
