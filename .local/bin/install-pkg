@@ -25,6 +25,7 @@ typeset -a pkgnames=(
     R
     alacritty
     check
+    cppcheck
     ctags
     emacs
     fontforge
@@ -69,6 +70,10 @@ iconsdir=$datadir/icons/hicolor
 
 ## ** R
 
+function clone-R {
+    svn checkout 'https://svn.r-project.org/R/tags/R-4-0-3/' R
+}
+
 function update-R {
     svn update
     ./tools/rsync-recommended
@@ -96,6 +101,10 @@ function stow-R {
 }
 
 ## ** alacritty
+
+function clone-alacritty {
+    git clone -b master --depth 1 'git@github.com:alacritty/alacritty.git'
+}
 
 function update-alacritty {
     git pull --ff-only
@@ -135,6 +144,10 @@ function stow-alacritty {
 
 ## ** check
 
+function clone-check {
+    git clone -b master --depth 1 'git@github.com:libcheck/check.git'
+}
+
 function update-check {
     git pull --ff-only
 }
@@ -159,7 +172,35 @@ function stow-check {
     done
 }
 
+## ** cppcheck
+
+function clone-cppcheck {
+    git clone -b main --depth 1 'git@github.com:danmar/cppcheck.git'
+}
+
+function update-cppcheck {
+    git pull --ff-only
+}
+
+function build-cppcheck {
+    mkdir -p build
+    pushd -q build
+    cmake -DCMAKE_INSTALL_PREFIX=$pkgprefix -DHAVE_RULES=ON -DUSE_MATCHCOMPILER=ON ..
+    cmake --build .
+    popd -q
+}
+
+function install-cppcheck {
+    pushd -q build
+    cmake --build . --target install
+    popd -q
+}
+
 ## ** ctags
+
+function clone-ctags {
+    git clone -b master --depth 1 'git@github.com:universal-ctags/ctags.git'
+}
 
 function update-ctags {
     git pull --ff-only
@@ -182,6 +223,10 @@ function stow-ctags {
 }
 
 ## ** emacs
+
+function clone-emacs {
+    git clone -b master --depth 1 'git://git.sv.gnu.org/emacs.git'
+}
 
 function update-emacs {
     git pull --ff-only
@@ -225,6 +270,10 @@ function stow-emacs {
 
 ## ** fontforge
 
+function clone-fontforge {
+    git clone -b master --depth 1 'git@github.com:fontforge/fontforge.git'
+}
+
 function update-fontforge {
     git pull --ff-only
 }
@@ -254,6 +303,10 @@ function stow-fontforge {
 
 ## ** fontship
 
+function clone-fontship {
+    git clone -b master --depth 1 'git@github.com:theleagueof/fontship.git'
+}
+
 function update-fontship {
     git pull --ff-only
 }
@@ -280,6 +333,10 @@ function stow-fontship {
 
 ## ** git
 
+function clone-git {
+    git clone -b master --depth 1 'git@github.com:git/git.git'
+}
+
 function update-git {
     git pull --ff-only
 }
@@ -302,6 +359,10 @@ function stow-git {
 
 ## ** grml-etc-core
 
+function clone-grml-etc-core {
+    git clone -b master --depth 1 'git://git.grml.org/grml-etc-core.git'
+}
+
 function update-grml-etc-core {
     git pull --ff-only
 }
@@ -322,6 +383,10 @@ function stow-grml-etc-core {
 
 ## ** pyenv
 
+function clone-pyenv {
+    git clone -b master --depth 1 'git@github.com:pyenv/pyenv.git'
+}
+
 function update-pyenv {
     git pull --ff-only
 }
@@ -341,11 +406,17 @@ function stow-pyenv {
 
 ## ** rofi
 
+function clone-rofi {
+    git clone --recursive 'git@github.com:davatorium/rofi.git'
+}
+
 function update-rofi {
     git pull --ff-only
+    git submodule update --remote
 }
 
 function build-rofi {
+    mkdir -p build
     meson setup build --prefix $pkgprefix
     ninja -C build
 }
@@ -359,6 +430,10 @@ function stow-rofi {
 }
 
 ## ** tmux
+
+function clone-tmux {
+    git clone -b master --depth 1 'git@github.com:tmux/tmux.git'
+}
 
 function update-tmux {
     git pull --ff-only
@@ -381,6 +456,10 @@ function stow-tmux {
 }
 
 ## ** vim
+
+function clone-vim {
+    git clone -b master --depth 1 'git@github.com:vim/vim.git'
+}
 
 function update-vim {
     git pull --ff-only
@@ -420,6 +499,10 @@ function stow-vim {
 
 ## ** zsh
 
+function clone-zsh {
+    git clone -b master --depth 1 'git://git.code.sf.net/p/zsh/code'
+}
+
 function update-zsh {
     git pull --ff-only
 }
@@ -447,6 +530,10 @@ function stow-zsh {
 
 ## ** zsh-completions
 
+function clone-zsh-completions {
+    git clone -b master --depth 1 'git@github.com:zsh-users/zsh-completions.git'
+}
+
 function update-zsh-completions {
     git pull --ff-only
 }
@@ -465,6 +552,10 @@ function stow-zsh-completions {
 }
 
 ## ** zsh-syntax-highlighting
+
+function clone-zsh-syntax-highlighting {
+    git clone -b master --depth 1 'git@github.com:zsh-users/zsh-syntax-highlighting.git'
+}
 
 function update-zsh-syntax-highlighting {
     git pull --ff-only
@@ -499,6 +590,13 @@ for pattern in $@ ; do
         cfgprefix=$cfgdir/$pkgname
         cfgzdotdir=$cfgprefix/.config/zsh
 
+        if [[ ! -d $srcdir/$pkgname ]] ; then
+            mkdir -p $srcdir
+            pushd -q $srcdir
+            echo "Cloning $pkgname..."
+            clone-$pkgname
+            popd -q
+        fi
         pushd -q $srcdir/$pkgname
         if [[ ! -v opts[-noupdate] ]] ; then
             echo "Updating $pkgname..."
