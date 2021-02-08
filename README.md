@@ -1,6 +1,7 @@
-# d125q’s configuration files
+# d125q’s configuration files and scripts
 
-This repository gathers my configuration files for various software that I use.
+This repository gathers configuration files and scripts for various pieces of
+software that I use.
 
 ## Installation
 
@@ -27,10 +28,10 @@ There are configuration files for the following components:
 - [Zsh](#zsh)
 - [Alacritty](#alacritty)
 
-### `install-pkg`
+### [`install-pkg`](.local/bin/install-pkg)
 
-`install-pkg` is a script to build and install packages locally.  It relies on
-[GNU Stow][stow-homepage].
+[`install-pkg`](.local/bin/install-pkg) is a script to build and install
+packages locally.  It relies on [GNU Stow][stow-homepage].
 
 ```
 Usage: install-pkg [OPTION]... PATTERN...
