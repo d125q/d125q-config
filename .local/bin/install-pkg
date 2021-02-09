@@ -258,7 +258,7 @@ function build-emacs {
 }
 
 function install-emacs {
-    make systemdunitdir=$cfgprefix/.config/systemd/user install
+    make systemdunitdir=$HOME/.config/systemd/user install
     rm $pkginfodir/dir
     mv $pkgbindir/ctags $pkgbindir/ctags.emacs
     mv $pkgman1dir/ctags.1.gz $pkgman1dir/ctags.emacs.1.gz
@@ -269,7 +269,6 @@ function stow-emacs {
     for pkginfofile in $pkginfodir/*.info*.gz ; do
         install-info --info-dir=$infodir $pkginfofile
     done
-    stow -d $cfgdir -R $pkgname
     if read -q '?Restart the GNU Emacs daemon? ' ; then
         echo
         systemctl --user daemon-reload
