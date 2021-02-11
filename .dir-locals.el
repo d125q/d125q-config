@@ -1,3 +1,5 @@
-((markdown-mode . ((fill-column . 80)
+((emacs-lisp-mode . ((indent-tabs-mode . nil)
+		     (flycheck-disabled-checkers . (emacs-lisp-checkdoc))))
+ (markdown-mode . ((fill-column . 80)
 		   (indent-tabs-mode . nil)))
  (sh-mode . ((indent-tabs-mode . nil))))
