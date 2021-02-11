@@ -10,7 +10,7 @@ typeset -a components=(
     pyenv
     rbenv
     grass74
-    instantclient_19_8
+    instantclient_21_1
     airflow
     lesspipe
 )
@@ -79,8 +79,8 @@ function setup_grass74 {
 }
 
 ## ** SQL*Plus (https://www.orafaq.com/wiki/)
-function setup_instantclient_19_8 {
-    local instantclient_home=/opt/instantclient_19_8
+function setup_instantclient_21_1 {
+    local instantclient_home=/opt/instantclient_21_1
     [[ -d $instantclient_home ]] || return 1
     path+=$instantclient_home
     ld_library_path+=$instantclient_home
