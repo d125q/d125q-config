@@ -1,0 +1,52 @@
+#!/usr/bin/env zsh
+
+read -r -d '' usage <<EOF
+Usage: $( basename $0 ) [OPTION]... SERVICE_NAME [...]
+Connect to an Oracle database identified by SERVICE_NAME.
+
+Options:
+    -u, -user, -username
+        the database account username
+            (default: whoami)
+    -p, -pass, -password
+        the database account password
+            (default: pass Oracle/SERVICE_NAME/USERNAME)
+
+Option parsing stops at '-' or '--'; any leftovers will be
+passed over to sqlplus.
+EOF
+set -euo pipefail
+typeset -A opts
+zparseopts -D -E -F -M -A opts -                \
+           h help=h                             \
+           u: user:=u username:=u               \
+           p: pass:=p password:=p
+
+if [[ -v opts[-h] ]] ; then
+    echo $usage
+    exit 0
+fi
+
+if [[ $# -lt 1 ]] ; then
+    >&2 echo $usage
+    return 1
+fi
+
+service_name=$1
+shift
+username=${opts[-u]:-$( whoami )}
+password=${opts[-p]:-$( pass Oracle/$service_name/$username )}
+typeset -a sqlplusopts
+while (( $# )) ; do
+    sqlplusopt=$1
+    shift
+    if [[ $sqlplusopt = '-' || $sqlplusopt = '--' ]] ; then
+        break
+    fi
+    sqlplusopts+=$sqlplusopt
+done
+sqlplusopts+=( "$@" )
+
+# The password is put into double quotes because otherwise Oracle has
+# a hard time handling special characters such as '@'.
+rlwrap sqlplus "${sqlplusopts[@]}" $username/\"$password\"@$service_name
