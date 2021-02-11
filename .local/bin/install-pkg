@@ -42,11 +42,12 @@ typeset -a pkgnames=(
     zsh-syntax-highlighting
 )
 typeset -A opts
-zparseopts -D -E -F -A opts - h help                 \
-           noupdate nobuild nostow                   \
+zparseopts -D -E -F -A opts -M -                        \
+           h help=h                                     \
+           noupdate nobuild nostow                      \
            pkgdir: cfgdir: srcdir: altdir: admindir:
 
-if [[ -v opts[-h] || -v opts[-help] ]] ; then
+if [[ -v opts[-h] ]] ; then
     echo $usage
     exit 0
 fi
