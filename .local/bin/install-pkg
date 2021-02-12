@@ -641,17 +641,18 @@ function stow-zsh-syntax-highlighting {
 
 for pattern in $@ ; do
     for pkgname in ${(M)pkgnames:#${~pattern}} ; do
-        pkgprefix=$pkgdir/$pkgname
-        pkgbindir=$pkgprefix/bin
-        pkgdatadir=$pkgprefix/share
-        pkgmandir=$pkgdatadir/man
-        pkgman1dir=$pkgmandir/man1
-        pkginfodir=$pkgdatadir/info
-        pkgapplicationsdir=$pkgdatadir/applications
-        pkgiconsdir=$pkgdatadir/icons/hicolor
+        readonly pkgprefix=$pkgdir/$pkgname
 
-        cfgprefix=$cfgdir/$pkgname
-        cfgzdotdir=$cfgprefix/.config/zsh
+        readonly pkgbindir=$pkgprefix/bin
+        readonly pkgdatadir=$pkgprefix/share
+        readonly pkgmandir=$pkgdatadir/man
+        readonly pkgman1dir=$pkgmandir/man1
+        readonly pkginfodir=$pkgdatadir/info
+        readonly pkgapplicationsdir=$pkgdatadir/applications
+        readonly pkgiconsdir=$pkgdatadir/icons/hicolor
+
+        readonly cfgprefix=$cfgdir/$pkgname
+        readonly cfgzdotdir=$cfgprefix/.config/zsh
 
         cd $srcdir
         if [[ ! -d $pkgname ]] ; then
