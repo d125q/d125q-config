@@ -396,7 +396,7 @@ function stow-grml-etc-core {
 ## ** libgit2
 
 function clone-libgit2 {
-    git clone -b master --depth 1 'git@github.com:libgit2/libgit2.git'
+    git clone -b main --depth 1 'git@github.com:libgit2/libgit2.git'
 }
 
 function update-libgit2 {
