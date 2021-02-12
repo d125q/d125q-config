@@ -33,6 +33,7 @@ typeset -a pkgnames=(
     git
     grml-etc-core
     libgit2
+    ncurses
     pyenv
     rofi
     tmux
@@ -390,6 +391,29 @@ function install-grml-etc-core {
 
 function stow-grml-etc-core {
     stow -d $cfgdir -R $pkgname
+}
+
+## ** ncurses
+
+function clone-ncurses {
+    git clone -b master --depth 1 'git@github.com:mirror/ncurses.git'
+}
+
+function update-ncurses {
+    git pull --ff-only
+}
+
+function build-ncurses {
+    ./configure --prefix=$pkgprefix
+    make
+}
+
+function install-ncurses {
+    make install
+}
+
+function stow-ncurses {
+    stow -d $pkgdir -R $pkgname
 }
 
 ## ** pyenv
