@@ -654,13 +654,16 @@ for pattern in $@ ; do
         readonly cfgprefix=$cfgdir/$pkgname
         readonly cfgzdotdir=$cfgprefix/.config/zsh
 
+        integer skipupdate=0
+
         cd $srcdir
         if [[ ! -d $pkgname ]] ; then
             echo "Cloning $pkgname..."
             clone-$pkgname
+            skipupdate=1
         fi
         cd $pkgname
-        if [[ ! -v opts[-noupdate] ]] ; then
+        if ! (( skipupdate )) && [[ ! -v opts[-noupdate] ]] ; then
             echo "Updating $pkgname..."
             update-$pkgname
         fi
