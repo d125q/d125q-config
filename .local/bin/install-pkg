@@ -34,6 +34,8 @@ typeset -a pkgnames=(
     grml-etc-core
     libgit2
     ncurses
+    otfcc
+    premake5
     pyenv
     rofi
     tmux
@@ -441,6 +443,58 @@ function install-ncurses {
 }
 
 function stow-ncurses {
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** otfcc
+
+function clone-otfcc {
+    git clone -b master --depth 1 'git@github.com:caryll/otfcc.git'
+}
+
+function update-otfcc {
+    git pull --ff-only
+}
+
+function build-otfcc {
+    premake5 ninja
+    cd build/ninja
+    ninja otfccbuild_release_x64 otfccdump_release_x64
+    cd -
+}
+
+function install-otfcc {
+    install -m 755 -D -t $pkgbindir bin/release-x64/otfcc{build,dump}
+}
+
+function stow-otfcc {
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** premake5
+
+function clone-premake5 {
+    git clone -b master --depth 1 'git@github.com:premake/premake-core.git' premake5
+}
+
+function update-premake5 {
+    git pull --ff-only
+}
+
+function build-premake5 {
+    if [[ -v commands[premake5] ]] ; then
+        premake5 gmake
+        make
+    else
+        make -f Bootstrap.mak linux
+    fi
+}
+
+function install-premake5 {
+    install -m 755 -D -t $pkgbindir bin/release/premake5
+}
+
+function stow-premake5 {
     stow -d $pkgdir -R $pkgname
 }
 
