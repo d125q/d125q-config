@@ -34,7 +34,7 @@ fi
 
 service_name=$1
 shift
-username=${opts[-u]:-$( whoami )}
+username=${(L)opts[-u]:-$( whoami )}
 password=${opts[-p]:-$( pass Oracle/$service_name/$username )}
 typeset -a sqlplusopts
 while (( $# )) ; do
