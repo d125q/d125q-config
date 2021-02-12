@@ -189,19 +189,19 @@ function update-cppcheck {
 
 function build-cppcheck {
     mkdir -p build
-    pushd -q build
+    cd build
     cmake -DCMAKE_INSTALL_PREFIX=$pkgprefix -DHAVE_RULES=ON -DUSE_MATCHCOMPILER=ON ..
     cmake --build .
-    popd -q
+    cd -
 }
 
 function install-cppcheck {
-    pushd -q build
+    cd build
     cmake --build . --target install
-    popd -q
-    pushd -q htmlreport
+    cd -
+    cd htmlreport
     python setup.py install
-    popd -q
+    cd -
 }
 
 function stow-cppcheck {
@@ -291,7 +291,7 @@ function update-fontforge {
 
 function build-fontforge {
     mkdir -p build
-    pushd -q build
+    cd build
     typeset -TU PYENV_PREFIX pyenv_prefix
     PYENV_PREFIX=$( pyenv prefix )
     cmake -GNinja                                       \
@@ -299,13 +299,13 @@ function build-fontforge {
           -DCMAKE_INSTALL_PREFIX=$pkgprefix             \
           ..
     ninja
-    popd -q
+    cd -
 }
 
 function install-fontforge {
-    pushd -q build
+    cd build
     ninja install
-    popd -q
+    cd -
 }
 
 function stow-fontforge {
@@ -601,13 +601,12 @@ for pattern in $@ ; do
         cfgprefix=$cfgdir/$pkgname
         cfgzdotdir=$cfgprefix/.config/zsh
 
-        if [[ ! -d $srcdir/$pkgname ]] ; then
-            pushd -q $srcdir
+        cd $srcdir
+        if [[ ! -d $pkgname ]] ; then
             echo "Cloning $pkgname..."
             clone-$pkgname
-            popd -q
         fi
-        pushd -q $srcdir/$pkgname
+        cd $pkgname
         if [[ ! -v opts[-noupdate] ]] ; then
             echo "Updating $pkgname..."
             update-$pkgname
@@ -622,6 +621,5 @@ for pattern in $@ ; do
             echo "Stowing $pkgname..."
             stow-$pkgname
         fi
-        popd -q
     done
 done
