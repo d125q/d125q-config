@@ -393,6 +393,34 @@ function stow-grml-etc-core {
     stow -d $cfgdir -R $pkgname
 }
 
+## ** libgit2
+
+function clone-libgit2 {
+    git clone -b master --depth 1 'git@github.com:libgit2/libgit2.git'
+}
+
+function update-libgit2 {
+    git pull --ff-only
+}
+
+function build-libgit2 {
+    mkdir -p build
+    cd build
+    cmake -DCMAKE_INSTALL_PREFIX=$pkgprefix ..
+    cmake --build .
+    cd -
+}
+
+function install-libgit2 {
+    cd build
+    cmake --build . --target install
+    cd -
+}
+
+function stow-libgit2 {
+    stow -d $pkgdir -R $pkgname
+}
+
 ## ** ncurses
 
 function clone-ncurses {
