@@ -37,6 +37,7 @@ typeset -a pkgnames=(
     otfcc
     premake5
     pyenv
+    rbenv
     rofi
     tmux
     vim
@@ -518,6 +519,36 @@ function install-pyenv {
 }
 
 function stow-pyenv {
+    stow -d $cfgdir -R $pkgname
+}
+
+## ** rbenv
+
+function clone-rbenv {
+    git clone -b master --depth 1 'git@github.com:rbenv/rbenv.git'
+    mkdir -p rbenv/plugins
+    cd rbenv/plugins
+    git clone -b master --depth 1 'git@github.com:rbenv/ruby-build.git'
+    cd -
+}
+
+function update-rbenv {
+    git pull --ff-only
+    cd plugins/ruby-build
+    git pull --ff-only
+    cd -
+}
+
+function build-rbenv {
+    echo "Nothing to build."
+}
+
+function install-rbenv {
+    mkdir -p $cfgprefix/.rbenv
+    rsync -avu --exclude .git ./ $cfgprefix/.rbenv
+}
+
+function stow-rbenv {
     stow -d $cfgdir -R $pkgname
 }
 
