@@ -94,8 +94,8 @@ function setup_airflow {
         unset AIRFLOW_HOME
         return 1
     }
-    typeset -gx AIRFLOW__CORE__DAGS_FOLDER=$AIRFLOW_HOME/dags     \
-                AIRFLOW__CORE__BASE_LOG_FOLDER=$AIRFLOW_HOME/logs
+    typeset -gx AIRFLOW__CORE__DAGS_FOLDER=$AIRFLOW_HOME/dags           \
+                AIRFLOW__LOGGING__BASE_LOG_FOLDER=$AIRFLOW_HOME/logs
     pythonpath+=$AIRFLOW__CORE__DAGS_FOLDER
 }
 
