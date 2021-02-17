@@ -76,7 +76,7 @@ function in-subdirs {
     for subdir in *(/) ; do
         pushd -q $subdir
         printf 'Running "%s" in "%s"\n' "$*" "$( pwd )"
-        $*
+        $@
         popd -q
     done
 }
