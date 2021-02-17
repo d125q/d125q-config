@@ -47,12 +47,9 @@ if [[ -v commands[pyenv] ]] ; then
     pyenv which pipenv &> /dev/null && eval "$( pipenv --completion )"
 fi
 
-## * Initialization of z.lua
-typeset Z_LUA_PATH=${ZDOTDIR:-$HOME}/z.lua/z.lua
-if [[ -v commands[lua] && -f $Z_LUA_PATH ]] ; then
-    eval "$( lua $Z_LUA_PATH --init zsh enhanced once fzf )"
-fi
-unset Z_LUA_PATH
+## * Initialization of zoxide
+
+eval "$( zoxide init zsh )"
 
 ## * Aliases and functions
 
