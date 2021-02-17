@@ -63,7 +63,7 @@ fi
 
 ## ** sudo
 if [[ -v commands[sudo] && -v commands[zpass] ]] ; then
-    alias sudo='SUDO_ASKPASS=${commands[zpass]} sudo -A'
+    alias sudo='SUDO_ASKPASS=${commands[zpass]} command sudo -A'
 fi
 
 ## ** Download albums from Bandcamp using youtube-dl
