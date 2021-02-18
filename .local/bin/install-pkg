@@ -296,7 +296,7 @@ function update-fontforge {
 function build-fontforge {
     mkdir -p build
     cd build
-    typeset -TU PYENV_PREFIX pyenv_prefix
+    typeset -lTU PYENV_PREFIX pyenv_prefix
     PYENV_PREFIX=$( pyenv prefix )
     cmake -GNinja                                       \
           -DCMAKE_PREFIX_PATH=${(j:;:)pyenv_prefix}     \
@@ -724,42 +724,47 @@ function stow-zsh-syntax-highlighting {
 
 ## * Main program
 
+function process-pkg {
+    typeset -lr pkgname=$1
+    typeset -lr pkgprefix=$pkgdir/$pkgname
+    typeset -lr pkgbindir=$pkgprefix/bin    \
+                pkgdatadir=$pkgprefix/share
+    typeset -lr pkgmandir=$pkgdatadir/man                   \
+                pkginfodir=$pkgdatadir/info                 \
+                pkgapplicationsdir=$pkgdatadir/applications \
+                pkgiconsdir=$pkgdatadir/icons/hicolor
+    typeset -lr pkgman1dir=$pkgmandir/man1
+
+    typeset -lr cfgprefix=$cfgdir/$pkgname
+    typeset -lr cfgzdotdir=$cfgprefix/.config/zsh
+
+    typeset -li skipupdate=0
+
+    cd $srcdir
+    if [[ ! -d $pkgname ]] ; then
+        echo "Cloning $pkgname..."
+        clone-$pkgname
+        skipupdate=1
+    fi
+    cd $pkgname
+    if ! (( skipupdate )) && [[ ! -v opts[-noupdate] ]] ; then
+        echo "Updating $pkgname..."
+        update-$pkgname
+    fi
+    if [[ ! -v opts[-nobuild] ]] ; then
+        echo "Building $pkgname..."
+        build-$pkgname
+    fi
+    echo "Installing $pkgname..."
+    install-$pkgname
+    if [[ ! -v opts[-nostow] ]] ; then
+        echo "Stowing $pkgname..."
+        stow-$pkgname
+    fi
+}
+
 for pattern in $@ ; do
     for pkgname in ${(M)pkgnames:#${~pattern}} ; do
-        pkgprefix=$pkgdir/$pkgname
-        pkgbindir=$pkgprefix/bin
-        pkgdatadir=$pkgprefix/share
-        pkgmandir=$pkgdatadir/man
-        pkgman1dir=$pkgmandir/man1
-        pkginfodir=$pkgdatadir/info
-        pkgapplicationsdir=$pkgdatadir/applications
-        pkgiconsdir=$pkgdatadir/icons/hicolor
-
-        cfgprefix=$cfgdir/$pkgname
-        cfgzdotdir=$cfgprefix/.config/zsh
-
-        integer skipupdate=0
-
-        cd $srcdir
-        if [[ ! -d $pkgname ]] ; then
-            echo "Cloning $pkgname..."
-            clone-$pkgname
-            skipupdate=1
-        fi
-        cd $pkgname
-        if ! (( skipupdate )) && [[ ! -v opts[-noupdate] ]] ; then
-            echo "Updating $pkgname..."
-            update-$pkgname
-        fi
-        if [[ ! -v opts[-nobuild] ]] ; then
-            echo "Building $pkgname..."
-            build-$pkgname
-        fi
-        echo "Installing $pkgname..."
-        install-$pkgname
-        if [[ ! -v opts[-nostow] ]] ; then
-            echo "Stowing $pkgname..."
-            stow-$pkgname
-        fi
+        process-pkg $pkgname
     done
 done
