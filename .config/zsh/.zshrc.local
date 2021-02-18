@@ -55,10 +55,10 @@ eval "$( zoxide init zsh )"
 
 ## ** exa -- a modern version of ls
 if [[ -v commands[exa] ]] ; then
-    alias ea='command exa -la'
+    alias e='command exa'
     alias el='command exa -l'
-    alias eh='command exa -hla'
-    alias e='command exa -l'
+    alias ea='command exa -la'
+    alias eh='command exa -lah'
 fi
 
 ## ** sudo
