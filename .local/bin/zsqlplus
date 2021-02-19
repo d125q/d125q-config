@@ -32,9 +32,9 @@ if [[ $# -lt 1 ]] ; then
     return 1
 fi
 
-service_name=$1
+typeset -u service_name=$1
 shift
-username=${(L)opts[-u]:-$( whoami )}
+typeset -l username=${opts[-u]:-$( whoami )}
 password=${opts[-p]:-$( pass Oracle/$service_name/$username )}
 typeset -a sqlplusopts
 while (( $# )) ; do
