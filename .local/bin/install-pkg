@@ -297,7 +297,7 @@ function update-fontforge {
 function build-fontforge {
     mkdir -p build
     cd build
-    typeset -lTU PYENV_PREFIX pyenv_prefix
+    local -TU PYENV_PREFIX pyenv_prefix
     PYENV_PREFIX=$( pyenv prefix )
     cmake -GNinja                                       \
           -DCMAKE_PREFIX_PATH=${(j:;:)pyenv_prefix}     \
@@ -414,9 +414,9 @@ function build-libertinus {
 }
 
 function install-libertinus {
-    typeset -lr tgtdir=$pkgprefix/share/fonts/Libertinus
+    local -r tgtdir=$pkgprefix/share/fonts/Libertinus
     mkdir -p $( dirname $tgtdir )
-    rsync -avu ./*.otf $pkgprefix/share/fonts/Libertinus
+    rsync -avu ./*.otf $tgtdir
 }
 
 function stow-libertinus {
@@ -752,20 +752,20 @@ function stow-zsh-syntax-highlighting {
 ## * Main program
 
 function process-pkg {
-    typeset -lr pkgname=$1
-    typeset -lr pkgprefix=$pkgdir/$pkgname
-    typeset -lr pkgbindir=$pkgprefix/bin    \
-                pkgdatadir=$pkgprefix/share
-    typeset -lr pkgmandir=$pkgdatadir/man                   \
-                pkginfodir=$pkgdatadir/info                 \
-                pkgapplicationsdir=$pkgdatadir/applications \
-                pkgiconsdir=$pkgdatadir/icons/hicolor
-    typeset -lr pkgman1dir=$pkgmandir/man1
+    local -r pkgname=$1
+    local -r pkgprefix=$pkgdir/$pkgname
+    local -r pkgbindir=$pkgprefix/bin    \
+             pkgdatadir=$pkgprefix/share
+    local -r pkgmandir=$pkgdatadir/man                   \
+             pkginfodir=$pkgdatadir/info                 \
+             pkgapplicationsdir=$pkgdatadir/applications \
+             pkgiconsdir=$pkgdatadir/icons/hicolor
+    local -r pkgman1dir=$pkgmandir/man1
 
-    typeset -lr cfgprefix=$cfgdir/$pkgname
-    typeset -lr cfgzdotdir=$cfgprefix/.config/zsh
+    local -r cfgprefix=$cfgdir/$pkgname
+    local -r cfgzdotdir=$cfgprefix/.config/zsh
 
-    typeset -li skipupdate=0
+    local -i skipupdate=0
 
     cd $srcdir
     if [[ ! -d $pkgname ]] ; then
