@@ -32,6 +32,7 @@ typeset -a pkgnames=(
     fontship
     git
     grml-etc-core
+    libertinus
     libgit2
     ncurses
     otfcc
@@ -394,6 +395,32 @@ function install-grml-etc-core {
 
 function stow-grml-etc-core {
     stow -d $cfgdir -R $pkgname
+}
+
+## ** libertinus
+
+function clone-libertinus {
+    git clone -b master --depth 1 'git@github.com:alerque/libertinus.git'
+}
+
+function update-libertinus {
+    git pull --ff-only
+}
+
+function build-libertinus {
+    source ${WORKON_HOME:-$HOME/.virtualenvs}/fontship/bin/activate
+    fontship make otf
+    deactivate
+}
+
+function install-libertinus {
+    typeset -lr tgtdir=$pkgprefix/share/fonts/Libertinus
+    mkdir -p $( dirname $tgtdir )
+    rsync -avu ./*.otf $pkgprefix/share/fonts/Libertinus
+}
+
+function stow-libertinus {
+    stow -d $pkgdir -R $pkgname
 }
 
 ## ** libgit2
