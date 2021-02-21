@@ -556,7 +556,7 @@ function build-noto-fonts {
 function install-noto-fonts {
     local -r tgtdir=$pkgprefix/share/fonts/Noto
     mkdir -p $( dirname $tgtdir )
-    rsync -avu ./unhinted/otf/ $tgtdir
+    rsync -avu ./hinted/ttf/ $tgtdir
 }
 
 function stow-noto-fonts {
