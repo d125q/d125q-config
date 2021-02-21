@@ -21,6 +21,7 @@ $ stow d125q-config
 - [Alacritty](.config/alacritty/alacritty.yml)
 - [fontconfig](.config/fontconfig)
 - [`install-pkg`](#install-pkg)
+- [`latexmk`](#latexmk)
 - [PAM environment](#pam-environment)
 - [tmux](.tmux.conf)
 - [X resources](.Xresources)
@@ -49,6 +50,16 @@ Options:
     -admindir DIR  directory containing the administrative information
                        (default: $HOME/.var/lib/dpkg)
 ```
+
+### `latexmk`
+
+[`latexmk`](.config/latexmk/latexmkrc) is set to use LuaLaTeX by default.
+Furthermore, it is set to run it with the following options:
+
+- `-interaction=nonstopmode` to run without interaction.
+- `-file-line-error` to print errors in the form `file:line:error`.
+- `-shell-escape` to enable the `\write18{command}` construct which is required
+  by packages such as [minted](https://ctan.org/pkg/minted?lang=en).
 
 ### PAM environment
 
