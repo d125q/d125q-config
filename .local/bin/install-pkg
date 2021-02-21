@@ -45,8 +45,6 @@ typeset -a pkgnames=(
     tmux
     vim
     zsh
-    zsh-completions
-    zsh-syntax-highlighting
 )
 typeset -A opts
 zparseopts -D -E -F -A opts -M -                        \
@@ -792,52 +790,6 @@ function stow-zsh {
     for pkginfofile in $infodir/zsh.info* ; do
         install-info --info-dir=$infodir $pkginfofile
     done
-}
-
-## ** zsh-completions
-
-function clone-zsh-completions {
-    git clone -b master --depth 1 'git@github.com:zsh-users/zsh-completions.git'
-}
-
-function update-zsh-completions {
-    git pull --ff-only
-}
-
-function build-zsh-completions {
-    echo "Nothing to build."
-}
-
-function install-zsh-completions {
-    mkdir -p $cfgzdotdir/$pkgname
-    rsync -avu ./src/ $cfgzdotdir/$pkgname
-}
-
-function stow-zsh-completions {
-    stow -d $cfgdir -R $pkgname
-}
-
-## ** zsh-syntax-highlighting
-
-function clone-zsh-syntax-highlighting {
-    git clone -b master --depth 1 'git@github.com:zsh-users/zsh-syntax-highlighting.git'
-}
-
-function update-zsh-syntax-highlighting {
-    git pull --ff-only
-}
-
-function build-zsh-syntax-highlighting {
-    echo "Nothing to build."
-}
-
-function install-zsh-syntax-highlighting {
-    mkdir -p $cfgzdotdir/$pkgname
-    rsync -avu --exclude .git/ ./ $cfgzdotdir/$pkgname
-}
-
-function stow-zsh-syntax-highlighting {
-    stow -d $cfgdir -R $pkgname
 }
 
 ## * Main program
