@@ -22,6 +22,7 @@ Options:
 EOF
 set -euo pipefail
 typeset -a pkgnames=(
+    Iosevka
     R
     alacritty
     check
@@ -35,6 +36,7 @@ typeset -a pkgnames=(
     libertinus
     libgit2
     ncurses
+    noto-fonts
     otfcc
     premake5
     pyenv
@@ -77,6 +79,71 @@ applicationsdir=$datadir/applications
 iconsdir=$datadir/icons/hicolor
 
 ## * Functions to update, build, install, and stow packages
+
+## ** Iosevka
+
+function clone-Iosevka {
+    git clone -b master --depth 1 'git@github.com:be5invis/Iosevka.git'
+}
+
+function update-Iosevka {
+    git pull --ff-only
+}
+
+function build-Iosevka {
+    if [[ ! -f private-build-plans.toml ]] ; then
+        cat <<'EOF' > private-build-plans.toml
+[buildPlans.iosevka-custom]
+family      = "Iosevka Custom" # Font menu family name
+spacing     = "fixed"          # Optional; Values: `normal`, `term`, `fontconfig-mono`, or `fixed`
+serifs      = "slab"           # Optional; Values: `sans` or `slab`
+digit-form  = "lining"         # Optional; Values `lining` or `old-style`
+no-ligation = true
+
+[buildPlans.iosevka-custom.weights.light]
+shape = 300
+menu  = 300
+css   = 300
+
+[buildPlans.iosevka-custom.weights.regular]
+shape = 500
+menu  = 400
+css   = 400
+
+[buildPlans.iosevka-custom.weights.bold]
+shape = 700
+menu  = 700
+css   = 700
+
+[buildPlans.iosevka-custom.widths.condensed]
+shape = 434
+menu  = 3
+css   = "condensed"
+
+[buildPlans.iosevka-custom.widths.normal]
+shape = 500
+menu  = 5
+css   = "normal"
+
+[buildPlans.iosevka-custom.widths.extended]
+shape = 576
+menu  = 7
+css   = "extended"
+EOF
+    fi
+    npm install
+    npm run build -- ttf::iosevka-custom
+}
+
+function install-Iosevka {
+    local -r tgtdir=$pkgprefix/share/fonts/Iosevka
+    mkdir -p $( dirname $tgtdir )
+    rsync -avu ./dist/iosevka-custom/ttf/*.ttf $tgtdir
+}
+
+function stow-Iosevka {
+    stow -d $pkgdir -R $pkgname
+}
 
 ## ** R
 
@@ -471,6 +538,30 @@ function install-ncurses {
 }
 
 function stow-ncurses {
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** noto-fonts
+
+function clone-noto-fonts {
+    git clone -b master --depth 1 'git@github.com:googlefonts/noto-fonts.git'
+}
+
+function update-noto-fonts {
+    git pull --ff-only
+}
+
+function build-noto-fonts {
+    echo "Nothing to build."
+}
+
+function install-noto-fonts {
+    local -r tgtdir=$pkgprefix/share/fonts/Noto
+    mkdir -p $( dirname $tgtdir )
+    rsync -avu ./unhinted/otf/ $tgtdir
+}
+
+function stow-noto-fonts {
     stow -d $pkgdir -R $pkgname
 }
 
