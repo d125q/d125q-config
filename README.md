@@ -19,6 +19,7 @@ $ stow d125q-config
 ## Components
 
 - [Alacritty](.config/alacritty/alacritty.yml)
+- [fontconfig](.config/fontconfig)
 - [`install-pkg`](#install-pkg)
 - The [PAM environment](#pam-environment)
 - [tmux](.tmux.conf)
