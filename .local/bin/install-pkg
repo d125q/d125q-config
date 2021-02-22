@@ -449,17 +449,21 @@ function update-grml-etc-core {
 }
 
 function build-grml-etc-core {
-    echo "Nothing to build."
+    cd doc
+    make
+    cd -
 }
 
 function install-grml-etc-core {
     mkdir -p $cfgprefix
     install -m 644 -D etc/vim/vimrc $cfgprefix/.vimrc
     install -m 644 -D etc/zsh/zshrc $cfgprefix/.config/zsh/.zshrc
+    install -m 644 -D doc/grmlzshrc.5 $pkgmandir/man5/grmlzshrc.5
 }
 
 function stow-grml-etc-core {
     stow -d $cfgdir -R $pkgname
+    stow -d $pkgdir -R $pkgname
 }
 
 ## ** libertinus
