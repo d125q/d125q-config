@@ -38,11 +38,11 @@
   "Map FUN over the symbols of SEXPR.
 
 \(mapsyms (lambda (sym)
-	   (intern (format \"prefix:%s\" sym)))
+           (intern (format \"prefix:%s\" sym)))
          \\='(setq var1 val1
                 var2 val2))
      ⇒ (prefix:setq prefix:var1 prefix:val1
-	            prefix:var2 prefix:val2)"
+                    prefix:var2 prefix:val2)"
   (cond
    ((and (symbolp sexpr) sexpr) (funcall fun sexpr))
    ((atom sexpr) sexpr)
@@ -139,7 +139,7 @@
  \\='(with-gensyms (funname)
     \\=`(progn
        (defun ,funname (arg)
-	 (message \"Hello, %s\" arg))
+         (message \"Hello, %s\" arg))
        (,funname \"World\"))))
      ⇒ (let ((funname (gensym \"--\")))
          \\=`(progn
