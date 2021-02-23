@@ -366,7 +366,7 @@ For details, see `custom-set-faces' and `defface'.
 \(plist/customize-variables (secret-data gnus)
   gnus-select-method
   gnus-secondary-select-methods)
-     ⇒ `gnus-select-method' and `gnus-secondary-select-methods'
+    => `gnus-select-method' and `gnus-secondary-select-methods'
        will be customized from (plist-get secret-plist :gnus)."
   (declare (indent 1))
   `(customize-variables
