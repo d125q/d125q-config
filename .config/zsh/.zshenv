@@ -27,7 +27,7 @@ function setup_go {
     [[ -v commands[go] ]] || return 1
     path+=$( go env GOPATH )/bin
     typeset -gx FZF_HOME
-    FZF_HOME=$( go list -f '{{.Dir}}' 'github.com/junegunn/fzf' ) || {
+    FZF_HOME=$( GO111MODULE=auto go list -f '{{.Dir}}' 'github.com/junegunn/fzf' ) || {
         unset FZF_HOME
         return 1
     }
