@@ -25,11 +25,11 @@
   "Convert OBJECT to keyword.
 
 \(as-keyword \\='symbol)
-     ⇒ :symbol
+    => :symbol
 \(as-keyword \"string\")
-     ⇒ :string
+    => :string
 \(as-keyword :keyword)
-     ⇒ :keyword"
+    => :keyword"
   (if (keywordp object)
       object
     (intern (format ":%s" object))))
@@ -37,12 +37,9 @@
 (defun mapsyms (fun sexpr)
   "Map FUN over the symbols of SEXPR.
 
-\(mapsyms (lambda (sym)
-           (intern (format \"prefix:%s\" sym)))
-         \\='(setq var1 val1
-                var2 val2))
-     ⇒ (prefix:setq prefix:var1 prefix:val1
-                    prefix:var2 prefix:val2)"
+\(mapsyms (lambda (sym) (intern (format \"prefix:%s\" sym)))
+         \\='(setq var1 val1 var2 val2))
+    => (prefix:setq prefix:var1 prefix:val1 prefix:var2 prefix:val2)"
   (cond
    ((and (symbolp sexpr) sexpr) (funcall fun sexpr))
    ((atom sexpr) sexpr)
@@ -51,11 +48,10 @@
 (defun make-string-abbreviator (strings)
   "Make an abbreviator for STRINGS.
 
-\(let* ((strings \\='(\"aye\" \"hello\" \"helium\" \"hooray\"))
+\(let* ((strings '(\"aye\" \"hello\" \"helium\" \"hooray\"))
        (abbreviator (make-string-abbreviator strings)))
-  (mapcar (lambda (string) (gethash string abbreviator))
-          strings))
-     ⇒ (\"a\" \"hell\" \"heli\" \"ho\")"
+  (mapcar (lambda (string) (gethash string abbreviator)) strings))
+    => (\"a\" \"hell\" \"heli\" \"ho\")"
   (cl-assert (cl-every #'stringp strings))
   (setq strings (seq-uniq strings #'equal))
   (cl-loop
@@ -90,7 +86,7 @@
 \(defvar secret-data (read (decrypt-file
                            (expand-file-name \"secret-data.gpg\"
                                              user-emacs-directory))))
-     ⇒ The file \"secret-data.gpg\" will be decrypted and read
+    => The file \"secret-data.gpg\" will be decrypted and read
        as a Lisp expression whose value will be stored in the
        `secret-data' variable."
   (setq file (expand-file-name file))
@@ -114,17 +110,16 @@
 \(let ((list (number-sequence 1 5)))
   (setq-nreverse list)
   list)
-     ⇒ (5 4 3 2 1)"
+    => (5 4 3 2 1)"
   `(setq ,@(mapcan (lambda (var) `(,var (nreverse ,var))) vars)))
 
 (defmacro with-namespace (namespace &rest body)
   "Format BODY with NAMESPACE.
 
-\(macroexpand
- \\='(with-namespace icomplete
-    (setq %s-prospects-height 2
-          %s-show-matches-on-no-input t)))
-     ⇒ (setq icomplete-prospects-height 2
+\(with-namespace icomplete
+  (setq %s-prospects-height 2
+        %s-show-matches-on-no-input t))
+    => (setq icomplete-prospects-height 2
              icomplete-show-matches-on-no-input t)"
   (declare (indent 1))
   (macroexp-progn
@@ -135,13 +130,12 @@
 (defmacro with-gensyms (syms &rest body)
   "Bind SYMS to fresh gensyms and evaluate BODY.
 
-\(macroexpand
- \\='(with-gensyms (funname)
-    \\=`(progn
-       (defun ,funname (arg)
-         (message \"Hello, %s\" arg))
-       (,funname \"World\"))))
-     ⇒ (let ((funname (gensym \"--\")))
+\(with-gensyms (funname)
+  \\=`(progn
+     (defun ,funname (arg)
+       (message \"Hello, %s\" arg))
+     (,funname \"World\")))
+    => (let ((funname (gensym \"--\")))
          \\=`(progn
             (defun ,funname (arg)
               (message \"Hello, %s\" arg))
@@ -160,12 +154,11 @@ external package.  VARS is a list of variables and FNS is a list
 of functions which are declared in PKG and used in BODY.  See
 also `with-eval-after-load'.
 
-\(macroexpand
- \\='(with-eval-after-load-or-progn
-      magit-extras t (:fns (ido-enter-magit-status))
-    (define-key ido-common-completion-map
-      (kbd \"C-x g\") \\='ido-enter-magit-status)))
-     ⇒ (progn
+\(with-eval-after-load-or-progn
+    magit-extras t (:fns (ido-enter-magit-status))
+  (define-key ido-common-completion-map
+    (kbd \"C-x g\") \\='ido-enter-magit-status))
+    => (progn
          (declare-function ido-enter-magit-status \"ext:magit-extras\")
          (with-eval-after-load \\='magit-extras
            (define-key ido-common-completion-map
@@ -186,7 +179,7 @@ also `with-eval-after-load'.
 \(funcall (deflambda (&key k1 k2)
            (format \"k1 = %s, k2 = %s\" k1 k2))
          :k1 \"foo\" :k2 \"bar\")
-     ⇒ \"k1 = foo, k2 = bar\""
+    => \"k1 = foo, k2 = bar\""
   (declare (indent 1))
   (with-gensyms (expr)
     `(lambda (&rest ,expr) (cl-destructuring-bind ,args ,expr ,@body))))
@@ -194,8 +187,8 @@ also `with-eval-after-load'.
 (defmacro define-controls (sym)
   "Define controls to turn on, turn off, or toggle SYM.
 
-\(macroexpand \\='(define-controls indent-tabs-mode))
-     ⇒ (progn
+\(define-controls indent-tabs-mode)
+    => (progn
          (defun turn-on-indent-tabs-mode ()
            \"Turn on \\=`indent-tabs-mode\\='.\"
            (interactive)
@@ -290,12 +283,12 @@ For details, see `custom-set-faces' and `defface'.
  (((background light))
   (face-1 (:foreground light-fg))
   (face-2 (:foreground light-fg))
-  (face-3 (:foreground light-fg))
+  (face-3 (:foreground light-fg)))
  (((background dark))
   (face-1 (:foreground dark-fg))
   (face-2 (:foreground dark-fg))
-  (face-3 (:foreground dark-fg)))))
-     ⇒ The three faces will have their foreground set to either
+  (face-3 (:foreground dark-fg))))
+    => The three faces will have their foreground set to either
        `light-fg' or `dark-fg' depending on whether Emacs is using
        a light or a dark background."
   `(custom-set-faces
@@ -322,9 +315,8 @@ For details, see `custom-set-faces' and `defface'.
 
 - If EXT-P is non-nil, PKG is assumed to be an external package.
 
-\(plist/set-variables (plstore erc :pkg erc)
-  erc-password)
-     ⇒ Once `erc' gets loaded, `erc-password' will be set from
+\(plist/set-variables (plstore erc :pkg erc) erc-password)
+    => Once `erc' gets loaded, `erc-password' will be set from
        (plstore-get plstore \"erc\")."
   (declare (indent 1))
   `(set-variables (:pkg ,pkg :ext-p ,ext-p)
@@ -357,9 +349,8 @@ For details, see `custom-set-faces' and `defface'.
 
 - If EXT-P is non-nil, PKG is assumed to be an external package.
 
-\(plist/set-variables (secret-plist erc :pkg erc)
-  erc-password)
-     ⇒ Once `erc' gets loaded, `erc-password' will be set from
+\(plist/set-variables (secret-plist erc :pkg erc) erc-password)
+    => Once `erc' gets loaded, `erc-password' will be set from
        (plist-get secret-plist :erc)."
   (declare (indent 1))
   `(set-variables (:pkg ,pkg :ext-p ,ext-p)
@@ -394,9 +385,9 @@ KEY must satisfy `stringp' or `vectorp'.  Strings are parsed with
 `kbd' and vectors are returned as-is.
 
 (equal (parse-key \"C-x g\") (kbd \"C-x g\"))
-     ⇒ t
+    => t
 (equal (parse-key [remap find-file]) [remap find-file])
-     ⇒ t"
+    => t"
   (cond
    ((stringp key) (kbd key))
    ((vectorp key) key)
@@ -433,7 +424,7 @@ If MAP is nil, the key binding will be made global."
   (\"w\" pyvenv-workon)
   (\"d\" pyvenv-deactivate)
   (\"c\" pyvenv-create))
-     ⇒ Once `pyvenv' gets loaded (e.g., by running `pyvenv-mode'),
+    => Once `pyvenv' gets loaded (e.g., by running `pyvenv-mode'),
        create the specified key bindings under the \"C-c v\" prefix
        and place them in `pyvenv-mode-map'."
   (declare (indent 1))
@@ -483,7 +474,7 @@ If MAP is nil, the key binding will be made global."
   (\"r\" flymake-running-backends)
   (\"D\" flymake-disabled-backends)
   (\"R\" flymake-reporting-backends))
-     ⇒ Once `flymake' gets loaded (e.g., by running `flymake-mode'),
+    => Once `flymake' gets loaded (e.g., by running `flymake-mode'),
        define a transient keymap containing the specified key bindings
        and use \"C-c !\" as the activator key."
   (declare (indent 2))
