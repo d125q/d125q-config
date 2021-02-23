@@ -1,4 +1,4 @@
-;;; d125q-utils.el --- d125q’s utils for GNU Emacs  -*- lexical-binding: t; -*-
+;;; d125q-utils.el --- d125q's utils for GNU Emacs  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
@@ -14,8 +14,12 @@
 
 ;;; Code:
 
+;; * Preamble
+
 (require 'cl-lib)
 (require 'epa)
+
+;; * Metaprogramming and performing general-purpose tasks
 
 (defun as-keyword (object)
   "Convert OBJECT to keyword.
@@ -30,15 +34,6 @@
       object
     (intern (format ":%s" object))))
 
-(defmacro setq-nreverse (&rest vars)
-  "Reverse VARS in-place.
-
-\(let ((list (number-sequence 1 5)))
-  (setq-nreverse list)
-  list)
-     ⇒ (5 4 3 2 1)"
-  `(setq ,@(mapcan (lambda (var) `(,var (nreverse ,var))) vars)))
-
 (defun mapsyms (fun sexpr)
   "Map FUN over the symbols of SEXPR.
 
@@ -52,6 +47,75 @@
    ((and (symbolp sexpr) sexpr) (funcall fun sexpr))
    ((atom sexpr) sexpr)
    (t (cons (mapsyms fun (car sexpr)) (mapsyms fun (cdr sexpr))))))
+
+(defun make-string-abbreviator (strings)
+  "Make an abbreviator for STRINGS.
+
+\(let* ((strings \\='(\"aye\" \"hello\" \"helium\" \"hooray\"))
+       (abbreviator (make-string-abbreviator strings)))
+  (mapcar (lambda (string) (gethash string abbreviator))
+          strings))
+     ⇒ (\"a\" \"hell\" \"heli\" \"ho\")"
+  (cl-assert (cl-every #'stringp strings))
+  (setq strings (seq-uniq strings #'equal))
+  (cl-loop
+   with maxlen = (apply #'max (mapcar #'seq-length strings))
+   and string->prefix = (make-hash-table :test #'equal)
+   and prefix->strings = (make-hash-table :test #'equal)
+   for len from 1 to maxlen
+   do (cl-loop
+       for string in strings
+       unless (gethash string string->prefix)
+       do (condition-case nil
+              (let* ((prefix (seq-subseq string 0 len))
+                     (strings (cons string (gethash prefix prefix->strings))))
+                (puthash prefix strings prefix->strings))
+            ;; In this case, `string' is a proper substring of some
+            ;; other member of `strings' – consider it to abbreviate
+            ;; to itself.
+            (error (puthash string string string->prefix))))
+   do (cl-loop
+       ;; If the prefix maps to only one element, it's good to go!
+       for prefix being the hash-keys of prefix->strings
+       using (hash-values strings)
+       unless (cdr strings)
+       do (puthash (car strings) prefix string->prefix))
+   ;; Prepare for the next iteration.
+   do (clrhash prefix->strings)
+   finally return string->prefix))
+
+(defun decrypt-file (file)
+  "Decrypt the contents of FILE.
+
+\(defvar secret-data (read (decrypt-file
+                           (expand-file-name \"secret-data.gpg\"
+                                             user-emacs-directory))))
+     ⇒ The file \"secret-data.gpg\" will be decrypted and read
+       as a Lisp expression whose value will be stored in the
+       `secret-data' variable."
+  (setq file (expand-file-name file))
+  (let ((context (epg-make-context epa-protocol)))
+    (epg-context-set-passphrase-callback
+     context
+     #'epa-passphrase-callback-function)
+    (epg-context-set-progress-callback
+     context
+     (cons #'epa-progress-callback-function
+           (format "Decrypting %s..." (file-name-nondirectory file))))
+    (condition-case error
+        (epg-decrypt-file context file nil)
+      (error
+       (epa-display-error context)
+       (signal (car error) (cdr error))))))
+
+(defmacro setq-nreverse (&rest vars)
+  "Reverse VARS in-place.
+
+\(let ((list (number-sequence 1 5)))
+  (setq-nreverse list)
+  list)
+     ⇒ (5 4 3 2 1)"
+  `(setq ,@(mapcan (lambda (var) `(,var (nreverse ,var))) vars)))
 
 (defmacro with-namespace (namespace &rest body)
   "Format BODY with NAMESPACE.
@@ -127,65 +191,201 @@ also `with-eval-after-load'.
   (with-gensyms (expr)
     `(lambda (&rest ,expr) (cl-destructuring-bind ,args ,expr ,@body))))
 
-(defun make-string-abbreviator (strings)
-  "Make an abbreviator for STRINGS.
+(defmacro define-controls (sym)
+  "Define controls to turn on, turn off, or toggle SYM.
 
-\(let* ((strings \\='(\"aye\" \"hello\" \"helium\" \"hooray\"))
-       (abbreviator (make-string-abbreviator strings)))
-  (mapcar (lambda (string) (gethash string abbreviator))
-          strings))
-     ⇒ (\"a\" \"hell\" \"heli\" \"ho\")"
-  (cl-assert (cl-every #'stringp strings))
-  (setq strings (seq-uniq strings #'equal))
-  (cl-loop
-   with maxlen = (apply #'max (mapcar #'seq-length strings))
-   and string->prefix = (make-hash-table :test #'equal)
-   and prefix->strings = (make-hash-table :test #'equal)
-   for len from 1 to maxlen
-   do (cl-loop
-       for string in strings
-       unless (gethash string string->prefix)
-       do (condition-case nil
-              (let* ((prefix (seq-subseq string 0 len))
-                     (strings (cons string (gethash prefix prefix->strings))))
-                (puthash prefix strings prefix->strings))
-            ;; In this case, `string' is a proper substring of some
-            ;; other member of `strings' – consider it to abbreviate
-            ;; to itself.
-            (error (puthash string string string->prefix))))
-   do (cl-loop
-       ;; If the prefix maps to only one element, it’s good to go!
-       for prefix being the hash-keys of prefix->strings
-       using (hash-values strings)
-       unless (cdr strings)
-       do (puthash (car strings) prefix string->prefix))
-   ;; Prepare for the next iteration.
-   do (clrhash prefix->strings)
-   finally return string->prefix))
+\(macroexpand \\='(define-controls indent-tabs-mode))
+     ⇒ (progn
+         (defun turn-on-indent-tabs-mode ()
+           \"Turn on \\=`indent-tabs-mode\\='.\"
+           (interactive)
+           (setq indent-tabs-mode t))
+         (defun turn-off-indent-tabs-mode ()
+           \"Turn off \\=`indent-tabs-mode\\='.\"
+           (interactive)
+           (setq indent-tabs-mode nil))
+         (defun toggle-indent-tabs-mode ()
+           \"Toggle \\=`indent-tabs-mode\\='.\"
+           (interactive)
+           (setq indent-tabs-mode (not indent-tabs-mode))))"
+  (cl-assert (symbolp sym))
+  (let* ((name (symbol-name sym))
+         (turn-on (intern (format "turn-on-%s" name)))
+         (turn-off (intern (format "turn-off-%s" name)))
+         (toggle (intern (format "toggle-%s" name))))
+    `(progn
+       (defun ,turn-on ()
+         ,(format "Turn on `%s'." name)
+         (interactive)
+         (setq ,sym t))
+       (defun ,turn-off ()
+         ,(format "Turn off `%s'." name)
+         (interactive)
+         (setq ,sym nil))
+       (defun ,toggle ()
+         ,(format "Toggle `%s'." name)
+         (interactive)
+         (setq ,sym (not ,sym))))))
 
-(defun decrypt-file (file)
-  "Decrypt the contents of FILE.
+(defmacro define-dispatcher (name main-fn &rest other-fns)
+  "Define NAME to dispatch to MAIN-FN and OTHER-FNS."
+  `(cl-defun ,name (arg &aux (current-prefix-arg nil) (tgt (car-safe arg)))
+     ,(format "Dispatch to `%s' and %d other(s)." main-fn (length other-fns))
+     (interactive "P")
+     (if tgt
+         (cl-loop
+          with val = 1
+          while (< val tgt)
+          for other-fn in ',other-fns
+          do (setq val (ash val 2))
+          finally return (if (= val tgt)
+                             (funcall-interactively other-fn)
+                           (user-error "Could not dispatch until %d" tgt)))
+       (call-interactively ',main-fn))))
 
-\(defvar secret-data (read (decrypt-file
-                           (expand-file-name \"secret-data.gpg\"
-                                             user-emacs-directory))))
-     ⇒ The file \"secret-data.gpg\" will be decrypted and read
-       as a Lisp expression whose value will be stored in the
-       `secret-data' variable."
-  (setq file (expand-file-name file))
-  (let ((context (epg-make-context epa-protocol)))
-    (epg-context-set-passphrase-callback
-     context
-     #'epa-passphrase-callback-function)
-    (epg-context-set-progress-callback
-     context
-     (cons #'epa-progress-callback-function
-           (format "Decrypting %s..." (file-name-nondirectory file))))
-    (condition-case error
-        (epg-decrypt-file context file nil)
-      (error
-       (epa-display-error context)
-       (signal (car error) (cdr error))))))
+;; * Settings and customizations
+
+(cl-defmacro set-variables ((&key pkg ext-p &aux vars assgns) &rest spec)
+  "Set variables according to SPEC.
+
+- SPEC is a list of (VAR VAL) such that each VAR will be set to
+  its corresponding VAL.
+
+- PKG is a symbol that is assumed to define each VAR, and the
+  settings will take effect only after it has been loaded.
+  If it is nil, the settings will take effect immediately.
+
+- If EXT-P is non-nil, PKG is assumed to be an external package."
+  (declare (indent 1))
+  (while spec
+    (let ((var (pop spec))
+          (val (pop spec)))
+      (push var vars)
+      (push `(,var ,val) assgns)))
+  `(with-eval-after-load-or-progn ,pkg ,ext-p (:vars ,(nreverse vars))
+     (setq ,@(apply #'nconc (nreverse assgns)))))
+
+(defmacro customize-variables (&rest spec)
+  "Customize variables according to SPEC.
+
+- SPEC is a list of (VAR VAL) such that each VAR will be
+  customized to its corresponding VAL."
+  (declare (indent 0))
+  `(custom-set-variables
+    ,@(cl-loop for (var expr) on spec by 'cddr
+               collect `'(,var ,expr))))
+
+(defmacro customize-faces (&rest spec)
+  "Customize faces according to SPEC.
+
+- SPEC is a list of (DISP . DEFS), where DISP specifies the
+  condition for which DEFS should take effect.
+
+- Each DEFS is a list of (FACE . ATTRS), where ATTRS specifies
+  the attributes of FACE.
+
+For details, see `custom-set-faces' and `defface'.
+
+\(customize-faces
+ (((background light))
+  (face-1 (:foreground light-fg))
+  (face-2 (:foreground light-fg))
+  (face-3 (:foreground light-fg))
+ (((background dark))
+  (face-1 (:foreground dark-fg))
+  (face-2 (:foreground dark-fg))
+  (face-3 (:foreground dark-fg)))))
+     ⇒ The three faces will have their foreground set to either
+       `light-fg' or `dark-fg' depending on whether Emacs is using
+       a light or a dark background."
+  `(custom-set-faces
+    ,@(cl-loop
+       with ht = (make-hash-table :test #'eq)
+       for (disp . defs) in spec
+       do (cl-loop
+           for (face . attrs) in defs
+           for upd = (cons (cons disp attrs) (gethash face ht))
+           do (puthash face upd ht))
+       finally return (cl-loop
+                       for face being the hash-keys of ht
+                       using (hash-values def)
+                       collect `'(,face ,def)))))
+
+(cl-defmacro plstore/set-variables ((plstore name &key pkg ext-p) &rest vars)
+  "Using the PLSTORE entry with NAME, set VARS.
+
+- VARS is a list of VAR.
+
+- PKG is a symbol that is assumed to define each VAR, and the
+  settings will take effect only after it has been loaded.
+  If it is nil, the settings will take effect immediately.
+
+- If EXT-P is non-nil, PKG is assumed to be an external package.
+
+\(plist/set-variables (plstore erc :pkg erc)
+  erc-password)
+     ⇒ Once `erc' gets loaded, `erc-password' will be set from
+       (plstore-get plstore \"erc\")."
+  (declare (indent 1))
+  `(set-variables (:pkg ,pkg :ext-p ,ext-p)
+     ,@(cl-loop
+        with entry = `(plstore-get ,plstore ,(format "%s" name))
+        with plist = `(cdr ,entry)
+        for var in vars
+        for val = `(plist-get ,plist ,(as-keyword var))
+        nconc `(,var ,val))))
+
+(cl-defmacro plstore/customize-variables ((plstore name) &rest vars)
+  "Using the PLSTORE entry with NAME, customize VARS."
+  (declare (indent 1))
+  `(customize-variables
+     ,@(cl-loop
+        with entry = `(plstore-get ,plstore ,name)
+        with plist = `(cdr ,entry)
+        for var in vars
+        for val = `(plist-get ,plist ,(as-keyword var))
+        nconc `(,var ,val))))
+
+(cl-defmacro plist/set-variables ((plist name &key pkg ext-p) &rest vars)
+  "Using the PLIST entry with NAME, set VARS.
+
+- VARS is a list of VAR.
+
+- PKG is a symbol that is assumed to define each VAR, and the
+  settings will take effect only after it has been loaded.
+  If it is nil, the settings will take effect immediately.
+
+- If EXT-P is non-nil, PKG is assumed to be an external package.
+
+\(plist/set-variables (secret-plist erc :pkg erc)
+  erc-password)
+     ⇒ Once `erc' gets loaded, `erc-password' will be set from
+       (plist-get secret-plist :erc)."
+  (declare (indent 1))
+  `(set-variables (:pkg ,pkg :ext-p ,ext-p)
+     ,@(cl-loop
+        with entry = `(plist-get ,plist ,(as-keyword name))
+        for var in vars
+        for val = `(plist-get ,entry ,(as-keyword var))
+        nconc `(,var ,val))))
+
+(cl-defmacro plist/customize-variables ((plist name) &rest vars)
+  "Using the PLIST entry with NAME, customize VARS.
+
+\(plist/customize-variables (secret-data gnus)
+  gnus-select-method
+  gnus-secondary-select-methods)
+     ⇒ `gnus-select-method' and `gnus-secondary-select-methods'
+       will be customized from (plist-get secret-plist :gnus)."
+  (declare (indent 1))
+  `(customize-variables
+     ,@(cl-loop
+        with entry = `(plist-get ,plist ,(as-keyword name))
+        for var in vars
+        for val = `(plist-get ,entry ,(as-keyword var))
+        nconc `(,var ,val))))
+
+;; * Key bindings and transient keymaps
 
 (defun parse-key (key)
   "Parse KEY to its internal representation.
@@ -310,170 +510,7 @@ If MAP is nil, the key binding will be made global."
            (set-transient-map ,transient-map ',keep-p))
          (bind-key ,map ,activator ',activate)))))
 
-(defmacro define-controls (sym)
-  "Define controls to turn on, turn off, or toggle SYM.
-
-\(macroexpand \\='(define-controls indent-tabs-mode))
-     ⇒ (progn
-         (defun turn-on-indent-tabs-mode ()
-           \"Turn on \\=`indent-tabs-mode\\='.\"
-           (interactive)
-           (setq indent-tabs-mode t))
-         (defun turn-off-indent-tabs-mode ()
-           \"Turn off \\=`indent-tabs-mode\\='.\"
-           (interactive)
-           (setq indent-tabs-mode nil))
-         (defun toggle-indent-tabs-mode ()
-           \"Toggle \\=`indent-tabs-mode\\='.\"
-           (interactive)
-           (setq indent-tabs-mode (not indent-tabs-mode))))"
-  (cl-assert (symbolp sym))
-  (let* ((name (symbol-name sym))
-         (turn-on (intern (format "turn-on-%s" name)))
-         (turn-off (intern (format "turn-off-%s" name)))
-         (toggle (intern (format "toggle-%s" name))))
-    `(progn
-       (defun ,turn-on ()
-         ,(format "Turn on `%s'." name)
-         (interactive)
-         (setq ,sym t))
-       (defun ,turn-off ()
-         ,(format "Turn off `%s'." name)
-         (interactive)
-         (setq ,sym nil))
-       (defun ,toggle ()
-         ,(format "Toggle `%s'." name)
-         (interactive)
-         (setq ,sym (not ,sym))))))
-
-(defmacro define-dispatcher (name main-fn &rest other-fns)
-  "Define NAME to dispatch to MAIN-FN and OTHER-FNS."
-  `(cl-defun ,name (arg &aux (current-prefix-arg nil) (tgt (car-safe arg)))
-     ,(format "Dispatch to `%s' and %d other(s)." main-fn (length other-fns))
-     (interactive "P")
-     (if tgt
-         (cl-loop
-          with val = 1
-          while (< val tgt)
-          for other-fn in ',other-fns
-          do (setq val (ash val 2))
-          finally return (if (= val tgt)
-                             (funcall-interactively other-fn)
-                           (user-error "Could not dispatch until %d" tgt)))
-       (call-interactively ',main-fn))))
-
-(cl-defmacro set-variables ((&key pkg ext-p &aux vars assgns) &rest spec)
-  "Set variables according to SPEC.
-
-- SPEC is a list of (VAR VAL) such that each VAR will be set to
-  its corresponding VAL.
-
-- PKG is a symbol that is assumed to define each VAR, and the
-  settings will take effect only after it has been loaded.
-  If it is nil, the settings will take effect immediately.
-
-- If EXT-P is non-nil, PKG is assumed to be an external package."
-  (declare (indent 1))
-  (while spec
-    (let ((var (pop spec))
-          (val (pop spec)))
-      (push var vars)
-      (push `(,var ,val) assgns)))
-  `(with-eval-after-load-or-progn ,pkg ,ext-p (:vars ,(nreverse vars))
-     (setq ,@(apply #'nconc (nreverse assgns)))))
-
-(defmacro customize-variables (&rest spec)
-  "Customize variables according to SPEC.
-
-- SPEC is a list of (VAR VAL) such that each VAR will be
-  customized to its corresponding VAL."
-  (declare (indent 0))
-  `(custom-set-variables
-    ,@(cl-loop for (var expr) on spec by 'cddr
-               collect `'(,var ,expr))))
-
-(defmacro customize-faces (&rest spec)
-  "Customize faces according to SPEC.
-
-- SPEC is a list of (DISP . DEFS), where DISP specifies the
-  condition for which DEFS should take effect.
-
-- Each DEFS is a list of (FACE . ATTRS), where ATTRS specifies
-  the attributes of FACE.
-
-For details, see `custom-set-faces' and `defface'.
-
-\(customize-faces
- (((background light))
-  (face-1 (:foreground light-fg))
-  (face-2 (:foreground light-fg))
-  (face-3 (:foreground light-fg))
- (((background dark))
-  (face-1 (:foreground dark-fg))
-  (face-2 (:foreground dark-fg))
-  (face-3 (:foreground dark-fg)))))
-     ⇒ The three faces will have their foreground set to either
-       `light-fg' or `dark-fg' depending on whether Emacs is using
-       a light or a dark background."
-  `(custom-set-faces
-    ,@(cl-loop
-       with ht = (make-hash-table :test #'eq)
-       for (disp . defs) in spec
-       do (cl-loop
-           for (face . attrs) in defs
-           for upd = (cons (cons disp attrs) (gethash face ht))
-           do (puthash face upd ht))
-       finally return (cl-loop
-                       for face being the hash-keys of ht
-                       using (hash-values def)
-                       collect `'(,face ,def)))))
-
-(cl-defmacro plstore/set-variables ((plstore name &key pkg ext-p) &rest syms)
-  "Using the PLSTORE entry with NAME, set SYMS."
-  (declare (indent 1))
-  `(set-variables (:pkg ,pkg :ext-p ,ext-p)
-     ,@(cl-loop
-        with entry = `(plstore-get ,plstore ,name)
-        with plist = `(cdr ,entry)
-        for sym in syms
-        for val = `(plist-get ,plist ,(as-keyword sym))
-        nconc `(,sym ,val))))
-
-(cl-defmacro plstore/customize-variables ((plstore name) &rest syms)
-  "Using the PLSTORE entry with NAME, customize SYMS."
-  (declare (indent 1))
-  `(customize-variables
-     ,@(cl-loop
-        with entry = `(plstore-get ,plstore ,name)
-        with plist = `(cdr ,entry)
-        for sym in syms
-        for val = `(plist-get ,plist ,(as-keyword sym))
-        nconc `(,sym ,val))))
-
-(cl-defmacro plist/set-variables ((plist name &key pkg ext-p) &rest syms)
-  "Using the PLIST entry with NAME, set SYMS.
-
-\(plist/set-variables (secret-data erc :pkg erc)
-  erc-password)
-     ⇒ Once `erc' gets loaded, `erc-password' will be set from
-       (plist-get (plist-get secret-data :erc) :erc-password)."
-  (declare (indent 1))
-  `(set-variables (:pkg ,pkg :ext-p ,ext-p)
-     ,@(cl-loop
-        with entry = `(plist-get ,plist ,(as-keyword name))
-        for sym in syms
-        for val = `(plist-get ,entry ,(as-keyword sym))
-        nconc `(,sym ,val))))
-
-(cl-defmacro plist/customize-variables ((plist name) &rest syms)
-  "Using the PLIST entry with NAME, customize SYMS."
-  (declare (indent 1))
-  `(customize-variables
-     ,@(cl-loop
-        with entry = `(plist-get ,plist ,(as-keyword name))
-        for sym in syms
-        for val = `(plist-get ,entry ,(as-keyword sym))
-        nconc `(,sym ,val))))
+;; * Postamble
 
 (provide 'd125q-utils)
 
