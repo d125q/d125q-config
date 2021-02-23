@@ -24,6 +24,7 @@ $ stow d125q-config
 - [`latexmk`](#latexmk)
 - [PAM environment](#pam-environment)
 - [tmux](.tmux.conf)
+- [Vim](#vim)
 - [X resources](.Xresources)
 - [Zsh](#zsh)
 
@@ -66,15 +67,26 @@ Furthermore, it is set to run it with the following options:
 The [PAM environment file](.pam_environment) is used to set the environment for
 the entire PAM session.
 
+### Vim
+
+- A new version of Vim is required – feel free to build [from source][vim-repo].
+- `.vimrc` should come from [grml-etc-core][grml-etc-core-repo].
+- Local changes go to `.vimrc.local` instead.
+- Included plugins:
+  + <https://github.com/junegunn/fzf.vim>
+  + <https://github.com/lervag/vimtex>
+
 ### Zsh
 
 - A new version of Zsh is required – feel free to build [from source][zsh-repo].
 - `ZDOTDIR` should be configured to point to `$HOME/.config/zsh`.
 - `.zshrc` should come from [grml-etc-core][grml-etc-core-repo].
+- Local changes to go `.zshrc.local` instead.
 
 
 [git-homepage]: https://git-scm.com/ "Homepage of Git"
 [grml-etc-core-repo]: https://github.com/grml/grml-etc-core "Git repository of grml-etc-core"
 [gruvbox-repo]: https://github.com/briemens/gruvbox "Git repository of Gruvbox"
 [stow-homepage]: https://www.gnu.org/software/stow/ "Homepage of GNU Stow"
+[vim-repo]: https://github.com/vim/vim "Git repository of Vim"
 [zsh-repo]: https://github.com/zsh-users/zsh "Git repository of Zsh"

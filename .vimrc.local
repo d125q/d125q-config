@@ -1,0 +1,3 @@
+if !empty($FZF_HOME)
+	set rtp+=$FZF_HOME
+endif

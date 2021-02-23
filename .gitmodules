@@ -10,3 +10,11 @@
 	path = .config/zsh/zsh-syntax-highlighting
 	url = git@github.com:zsh-users/zsh-syntax-highlighting.git
 	branch = master
+[submodule "vimtex"]
+	path = .vim/pack/default/start/vimtex
+	url = git@github.com:lervag/vimtex.git
+	branch = master
+[submodule "fzf.vim"]
+	path = .vim/pack/default/start/fzf.vim
+	url = git@github.com:junegunn/fzf.vim.git
+	branch = master
