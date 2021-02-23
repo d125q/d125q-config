@@ -81,7 +81,7 @@ the entire PAM session.
 - A new version of Zsh is required – feel free to build [from source][zsh-repo].
 - `ZDOTDIR` should be configured to point to `$HOME/.config/zsh`.
 - `.zshrc` should come from [grml-etc-core][grml-etc-core-repo].
-- Local changes to go `.zshrc.local` instead.
+- Local changes to go `.zshrc.pre` and `.zshrc.local` instead.
 
 
 [git-homepage]: https://git-scm.com/ "Homepage of Git"
