@@ -110,7 +110,8 @@ for component in $components ; do
 done
 
 ## * Add local paths to LD_LIBRARY_PATH
-ld_library_path+=$HOME/.local/lib
+ld_library_path+=($HOME/.local/lib
+                  $HOME/.local/lib/x86_64-linux-gnu)
 
 ## * Add local paths to PKG_CONFIG_PATH
 pkg_config_path+=($HOME/.local/lib/pkgconfig
