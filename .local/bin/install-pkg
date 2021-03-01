@@ -35,6 +35,7 @@ typeset -a pkgnames=(
     grml-etc-core
     libertinus
     libgit2
+    libsynctex
     ncurses
     noto-fonts
     otfcc
@@ -520,6 +521,60 @@ function stow-libgit2 {
     stow -d $pkgdir -R $pkgname
 }
 
+## ** libsynctex
+
+function clone-libsynctex {
+    rsync -avu --delete --exclude .svn/ --exclude work/ \
+          tug.org::tldevsrc/Build/source/ libsynctex
+}
+
+function update-libsynctex {
+    rsync -avu --delete --exclude .svn/ --exclude work/ \
+          tug.org::tldevsrc/Build/source/ .
+}
+
+function build-libsynctex {
+    mkdir -p work
+    cd work
+    ../configure --prefix=$pkgprefix            \
+      --disable-native-texlive-build            \
+      --disable-all-pkgs                        \
+      --disable-static                          \
+      --enable-shared                           \
+      --enable-synctex                          \
+      --with-system-harfbuzz                    \
+      --with-system-icu                         \
+      --with-system-teckit                      \
+      --with-system-graphite2                   \
+      --with-system-zziplib                     \
+      --with-system-mpfr                        \
+      --with-system-gmp                         \
+      --with-system-cairo                       \
+      --with-system-pixman                      \
+      --with-system-gd                          \
+      --with-system-freetype2                   \
+      --with-system-libpng                      \
+      --with-system-libpaper                    \
+      --with-system-zlib                        \
+      --with-system-ptexenc                     \
+      --with-system-kpathsea
+    make
+    cd -
+}
+
+function install-libsynctex {
+    cd work
+    make -C texk/web2c                          \
+         install-pkgconfigDATA                  \
+         install-syncincludeHEADERS             \
+         install-libLTLIBRARIES
+    cd -
+}
+
+function stow-libsynctex {
+    stow -d $pkgdir -R $pkgname
+}
+
 ## ** ncurses
 
 function clone-ncurses {
@@ -665,7 +720,7 @@ function build-rbenv {
 
 function install-rbenv {
     mkdir -p $cfgprefix/.rbenv
-    rsync -avu --exclude .git ./ $cfgprefix/.rbenv
+    rsync -avu --exclude .git/ ./ $cfgprefix/.rbenv
 }
 
 function stow-rbenv {
