@@ -765,7 +765,6 @@ function update-rofi {
 }
 
 function build-rofi {
-    mkdir -p build
     meson setup build --prefix $pkgprefix
     ninja -C build
 }
