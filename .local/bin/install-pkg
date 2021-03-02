@@ -627,7 +627,7 @@ function stow-ncurses {
 ## ** noto-fonts
 
 function clone-noto-fonts {
-    git clone -b master --depth 1 'git@github.com:googlefonts/noto-fonts.git'
+    git clone -b main --depth 1 'git@github.com:googlefonts/noto-fonts.git'
 }
 
 function update-noto-fonts {
