@@ -31,6 +31,7 @@ typeset -a pkgnames=(
     emacs
     fontforge
     fontship
+    girara
     git
     grml-etc-core
     libertinus
@@ -45,6 +46,8 @@ typeset -a pkgnames=(
     rofi
     tmux
     vim
+    zathura
+    zathura-pdf-poppler
     zsh
 )
 typeset -A opts
@@ -410,6 +413,29 @@ function install-fontship {
 }
 
 function stow-fontship {
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** girara
+
+function clone-girara {
+    git clone -b master --depth 1 'https://git.pwmt.org/pwmt/girara.git'
+}
+
+function update-girara {
+    git pull --ff-only
+}
+
+function build-girara {
+    meson setup build --prefix $pkgprefix
+    ninja -C build
+}
+
+function install-girara {
+    ninja -C build install
+}
+
+function stow-girara {
     stow -d $pkgdir -R $pkgname
 }
 
@@ -817,6 +843,52 @@ function stow-vim {
             --install $altlink $altname $pkgbindir/vim 50         \
             --slave $altslavelink $altslavename $pkgman1dir/vim.1
     done
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** zathura
+
+function clone-zathura {
+    git clone -b master --depth 1 'https://git.pwmt.org/pwmt/zathura.git'
+}
+
+function update-zathura {
+    git pull --ff-only
+}
+
+function build-zathura {
+    meson setup build --prefix $pkgprefix
+    ninja -C build
+}
+
+function install-zathura {
+    ninja -C build install
+}
+
+function stow-zathura {
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** zathura-pdf-poppler
+
+function clone-zathura-pdf-poppler {
+    git clone -b master --depth 1 'https://git.pwmt.org/pwmt/zathura-pdf-poppler.git'
+}
+
+function update-zathura-pdf-poppler {
+    git pull --ff-only
+}
+
+function build-zathura-pdf-poppler {
+    meson setup build --prefix $pkgprefix
+    ninja -C build
+}
+
+function install-zathura-pdf-poppler {
+    ninja -C build install
+}
+
+function stow-zathura-pdf-poppler {
     stow -d $pkgdir -R $pkgname
 }
 
