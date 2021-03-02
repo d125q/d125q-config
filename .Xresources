@@ -2,6 +2,9 @@ Emacs.font: Iosevka Custom-13
 Emacs.paneFont: -*-terminus-*-r-*-*-13-*-*-*-*-*-*-*
 Emacs.selectionFont: -*-terminus-*-r-*-*-11-*-*-*-*-*-*-*
 
+Emacs.backgroundMode: dark
+Emacs.background: black
+Emacs.foreground: white
 Emacs.cursorBlink: off
 Emacs.horizontalScrollBars: off
 Emacs.verticalScrollBars: off
