@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+dbus-monitor --profile "type='method_call',interface='org.pwmt.zathura',member='SynctexView'"   \
+    | stdbuf -oL cut -sf5                                                                       \
+    | stdbuf -oL awk -F'-' '$1 == "org.pwmt.zathura.PID" { print $2; }'                         \
+    | xargs -L1 xdotool search --pid                                                            \
+    | sed -Eune '2~2p'                                                                          \
+    | xargs -L1 wmctrl -iR

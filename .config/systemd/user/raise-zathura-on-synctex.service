@@ -1,0 +1,9 @@
+[Unit]
+Description=Raise Zathura on SyncTeX
+
+[Service]
+ExecStart=%h/.local/bin/raise-zathura-on-synctex
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
