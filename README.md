@@ -57,10 +57,11 @@ Options:
 [`latexmk`](.config/latexmk/latexmkrc) is set to use LuaLaTeX by default.
 Furthermore, it is set to run it with the following options:
 
-- `-interaction=nonstopmode` to run without interaction.
-- `-file-line-error` to print errors in the form `file:line:error`.
-- `-shell-escape` to enable the `\write18{command}` construct which is required
+- `--interaction=nonstopmode` to run without interaction.
+- `--file-line-error` to print errors in the form `file:line:error`.
+- `--shell-escape` to enable the `\write18{command}` construct which is required
   by packages such as [minted](https://ctan.org/pkg/minted?lang=en).
+- `--synctex=1` to enable SyncTeX.
 
 ### PAM environment
 
