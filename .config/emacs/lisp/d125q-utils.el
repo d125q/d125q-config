@@ -104,6 +104,15 @@
        (epa-display-error context)
        (signal (car error) (cdr error))))))
 
+(defun wmctrl-raise-frame (&optional frame)
+  "Raise FRAME using wmctrl.
+
+If FRAME is nil, the selected frame is used."
+  (setq frame (or frame (selected-frame)))
+  (call-process
+   "wmctrl" nil nil nil "-i" "-R"
+   (frame-parameter frame 'outer-window-id)))
+
 (defmacro setq-nreverse (&rest vars)
   "Reverse VARS in-place.
 
