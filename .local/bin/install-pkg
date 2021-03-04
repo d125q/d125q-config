@@ -38,6 +38,7 @@ typeset -a pkgnames=(
     libgit2
     libsynctex
     ncurses
+    noto-cjk
     noto-fonts
     otfcc
     premake5
@@ -621,6 +622,30 @@ function install-ncurses {
 }
 
 function stow-ncurses {
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** noto-cjk
+
+function clone-noto-cjk {
+    git clone -b main --depth 1 'git@github.com:googlefonts/noto-cjk.git'
+}
+
+function update-noto-cjk {
+    git pull --ff-only
+}
+
+function build-noto-cjk {
+    echo "Nothing to build."
+}
+
+function install-noto-cjk {
+    local -r tgtdir=$pkgprefix/share/fonts/NotoCJK
+    mkdir -p $( dirname $tgtdir )
+    rsync -avu --delete --include='*.otf' --exclude='*' ./ $tgtdir
+}
+
+function stow-noto-cjk {
     stow -d $pkgdir -R $pkgname
 }
 
