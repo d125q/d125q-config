@@ -410,7 +410,7 @@ If MAP is nil, the key binding will be made global."
       (define-key map parsed-key cmd)
     (global-set-key parsed-key cmd)))
 
-(cl-defmacro define-key-bindings ((&key map prefix pkg ext-p) &rest spec)
+(cl-defmacro define-key-bindings ((&key map prefix prepend pkg ext-p) &rest spec)
   "Define key bindings with SPEC.
 
 - SPEC is a list of (KEY CMD) such that each CMD will be bound to
@@ -420,6 +420,10 @@ If MAP is nil, the key binding will be made global."
   nil, the key bindings will be made global.
 
 - PREFIX is a key that will act as a prefix for each key binding.
+  It will be established through a prefix keymap bound to a
+  gensym.
+
+- PREPEND is a key that will be prepended to each KEY.
 
 - PKG is a symbol that is assumed to define each CMD, and the key
   bindings will be defined only after it has been loaded.  If it
@@ -451,6 +455,15 @@ If MAP is nil, the key binding will be made global."
     (while spec
       (cl-destructuring-bind (key cmd) (pop spec)
         (push cmd fns)
+        (when prepend
+          (setq key (cond
+                     ((and (vectorp prepend) (vectorp key))
+                      (vconcat prepend [ ] key))
+                     ((and (stringp prepend) (stringp key))
+                      (concat prepend " " key))
+                     (t
+                      (user-error "PREPEND and KEY must both be vectors or strings\nPREPEND = %s\nKEY = %s"
+                                  prepend key)))))
         (push `(bind-key ,map ,key ',cmd) bind-key-exprs)))
     (setq-nreverse fns bind-key-exprs)
     `(with-eval-after-load-or-progn ,pkg ,ext-p (:vars ,vars :fns ,fns)
