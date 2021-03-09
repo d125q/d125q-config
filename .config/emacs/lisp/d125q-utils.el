@@ -154,7 +154,7 @@ If FRAME is nil, the selected frame is used."
   `(let ,(cl-mapcar #'list syms '#1=((gensym "--") . #1#))
      ,@body))
 
-(cl-defmacro with-eval-after-load-or-progn (pkg ext-p (&key vars fns) &rest body)
+(cl-defmacro with-eval-after-package (pkg ext-p (&key vars fns) &rest body)
   "Execute BODY after PKG is loaded.
 
 BODY will be executed immediately if PKG is nil or has already
@@ -163,7 +163,7 @@ external package.  VARS is a list of variables and FNS is a list
 of functions which are declared in PKG and used in BODY.  See
 also `with-eval-after-load'.
 
-\(with-eval-after-load-or-progn
+\(with-eval-after-package
     magit-extras t (:fns (ido-enter-magit-status))
   (define-key ido-common-completion-map
     (kbd \"C-x g\") \\='ido-enter-magit-status))
@@ -264,7 +264,7 @@ also `with-eval-after-load'.
           (val (pop spec)))
       (push var vars)
       (push `(,var ,val) assgns)))
-  `(with-eval-after-load-or-progn ,pkg ,ext-p (:vars ,(nreverse vars))
+  `(with-eval-after-package ,pkg ,ext-p (:vars ,(nreverse vars))
      (setq ,@(apply #'nconc (nreverse assgns)))))
 
 (defmacro customize-variables (&rest spec)
@@ -466,7 +466,7 @@ If MAP is nil, the key binding will be made global."
                                   prepend key)))))
         (push `(bind-key ,map ,key ',cmd) bind-key-exprs)))
     (setq-nreverse fns bind-key-exprs)
-    `(with-eval-after-load-or-progn ,pkg ,ext-p (:vars ,vars :fns ,fns)
+    `(with-eval-after-package ,pkg ,ext-p (:vars ,vars :fns ,fns)
        ,@(nconc init-prefix-exprs bind-key-exprs))))
 
 (cl-defmacro define-transient-map ((&key map pkg ext-p) activator &rest spec)
@@ -511,7 +511,7 @@ If MAP is nil, the key binding will be made global."
           (push `(bind-key ,temp-map ,key ',cmd) bind-key-exprs)
           (when persist (push cmd persistent-cmds))))
       (setq-nreverse fns bind-key-exprs persistent-cmds)
-      `(with-eval-after-load-or-progn ,pkg ,ext-p (:vars ,vars :fns ,fns)
+      `(with-eval-after-package ,pkg ,ext-p (:vars ,vars :fns ,fns)
          (defvar ,transient-map
            (let ((,temp-map (make-sparse-keymap)))
              ,@bind-key-exprs
