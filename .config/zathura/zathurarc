@@ -1,0 +1,7 @@
+set font                   "Iosevka Custom 13"
+set guioptions             "s"
+set selection-clipboard    "clipboard"
+set adjust-open            "width"
+set database               "sqlite"
+set scroll-page-aware      true
+set synctex-editor-command "emacsclient +%{line} %{input}"

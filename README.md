@@ -26,6 +26,7 @@ $ stow d125q-config
 - [tmux](.tmux.conf)
 - [Vim](#vim)
 - [X resources](.Xresources)
+- [Zathura](.config/zathura/zathurarc)
 - [Zsh](#zsh)
 
 ### `install-pkg`
