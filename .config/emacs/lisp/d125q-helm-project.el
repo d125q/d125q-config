@@ -23,14 +23,15 @@
 
 ;; * `helm-project-find-files'
 
-(defvar d125q/hpff-candidates nil
+(defvar helm-project-ff-candidates nil
   "Candidates for `helm-project-find-files'.")
 
-(defvar d125q/hpff-source nil
+(defvar helm-project-ff-source nil
   "Source for `helm-project-find-files'.")
 
-(defclass d125q/hpff-source-class (helm-source-sync)
-  ((candidates :initform (lambda () d125q/hpff-candidates))
+(defclass helm-project-ff-source-class (helm-source-sync)
+  ((init :initform (lambda ()
+                     (helm-set-attr 'candidates helm-project-ff-candidates)))
    (persistent-action-if :initform #'helm-find-files-persistent-action-if)
    (persistent-help :initform "Hit1 Expand Candidate, Hit2 or (C-u) Find file")
    (help-message :initform 'helm-hpff-help-message)
@@ -48,11 +49,11 @@
   (interactive)
   (if-let (project (project-current))
       (let ((helm-ff-default-directory (project-root project))
-            (d125q/hpff-candidates (project-files project)))
-        (unless d125q/hpff-source
-          (setq d125q/hpff-source (helm-make-source
-                                       "Project FF" 'd125q/hpff-source-class)))
-        (helm :sources 'd125q/hpff-source
+            (helm-project-ff-candidates (project-files project)))
+        (unless helm-project-ff-source
+          (setq helm-project-ff-source (helm-make-source
+                                       "Project FF" 'helm-project-ff-source-class)))
+        (helm :sources 'helm-project-ff-source
               :case-fold-search helm-file-name-case-fold-search
               :prompt "Find files in project: "
               :buffer "*helm project find files*"))
@@ -60,18 +61,18 @@
 
 ;; * `helm-project-buffers-list'
 
-(defvar d125q/hpbl-project nil
+(defvar helm-project-bl-project nil
   "Project for `helm-project-buffers-list'.")
 
-(defvar d125q/hpbl-source nil
+(defvar helm-project-bl-source nil
   "Source for `helm-project-buffers-list'.")
 
-(defclass d125q/hpbl-source-class (helm-source-buffers)
+(defclass helm-project-bl-source-class (helm-source-buffers)
   ((candidate-transformer
     :initform (lambda (candidates)
                 (cl-loop
                  for buf in candidates
-                 when (equal d125q/hpbl-project
+                 when (equal helm-project-bl-project
                              (with-current-buffer buf (project-current)))
                  collect buf)))
    (group :initform 'd125q-helm-project)))
@@ -80,13 +81,13 @@
 (defun helm-project-buffers-list ()
   "List buffers in the current project using Helm."
   (interactive)
-  (if-let (d125q/hpbl-project (project-current))
+  (if-let (helm-project-bl-project (project-current))
       (progn
-        (message "%s" d125q/hpbl-project)
-        (unless d125q/hpbl-source
-          (setq d125q/hpbl-source (helm-make-source
-                                       "Project BL" 'd125q/hpbl-source-class)))
-        (helm :sources '(d125q/hpbl-source
+        (message "%s" helm-project-bl-project)
+        (unless helm-project-bl-source
+          (setq helm-project-bl-source (helm-make-source
+                                       "Project BL" 'helm-project-bl-source-class)))
+        (helm :sources '(helm-project-bl-source
                          helm-source-buffer-not-found)
               :keymap helm-buffer-map
               :truncate-lines helm-buffers-truncate-lines
