@@ -40,7 +40,6 @@
    (mode-line :initform (list "File(s)" helm-mode-line-string))
    (volatile :initform t)
    (migemo :initform t)
-   (nohighlight :initform t)
    (group :initform 'd125q-helm-project)))
 
 ;;;###autoload
