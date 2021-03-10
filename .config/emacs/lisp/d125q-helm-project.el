@@ -42,7 +42,6 @@
    (migemo :initform t)
    (group :initform 'd125q-helm-project)))
 
-;;;###autoload
 (defun helm-project-find-files ()
   "Find files in the current project using Helm."
   (interactive)
@@ -76,7 +75,6 @@
                  collect buf)))
    (group :initform 'd125q-helm-project)))
 
-;;;###autoload
 (defun helm-project-buffers-list ()
   "List buffers in the current project using Helm."
   (interactive)
@@ -97,7 +95,6 @@
 
 ;; `helm-project-grep'
 
-;;;###autoload
 (defun helm-project-grep (arg)
   "Grep the current project using Helm."
   (interactive "P")
