@@ -22,6 +22,7 @@ Options:
 EOF
 set -euo pipefail
 typeset -a pkgnames=(
+    DancingScript
     Iosevka
     R
     alacritty
@@ -83,6 +84,25 @@ applicationsdir=$datadir/applications
 iconsdir=$datadir/icons/hicolor
 
 ## * Functions to update, build, install, and stow packages
+
+## ** DancingScript
+
+function clone-DancingScript {
+    git clone -b master --depth 1 'git@github.com:impallari/DancingScript.git'
+}
+
+function update-DancingScript {
+    git pull --ff-only --depth 1
+}
+
+function install-DancingScript {
+    local -r tgtdir=$pkgprefix/share/fonts/DancingScript
+    install -m 644 -D -t $tgtdir ./fonts/otf/*.otf
+}
+
+function stow-DancingScript {
+    stow -d $pkgdir -R $pkgname
+}
 
 ## ** Iosevka
 
