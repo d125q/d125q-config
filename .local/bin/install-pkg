@@ -59,7 +59,7 @@ zparseopts -D -E -F -A opts -M -                        \
            pkgdir: cfgdir: srcdir: altdir: admindir:
 
 if [[ -v opts[-h] ]] ; then
-    echo $usage
+    printf '%s\n' $usage
     exit 0
 fi
 
@@ -347,11 +347,11 @@ function stow-emacs {
         install-info --info-dir=$infodir $pkginfofile
     done
     if read -q '?Restart the GNU Emacs daemon? ' ; then
-        echo
+        printf '\n'
         systemctl --user daemon-reload
         systemctl --user restart emacs.service
     else
-        echo
+        printf '\n'
     fi
 }
 
@@ -973,27 +973,27 @@ function process-pkg {
 
     cd $srcdir
     if [[ ! -d $pkgname ]] ; then
-        echo "Cloning $pkgname..."
+        printf 'Cloning %s...\n' $pkgname
         clone-$pkgname
         skipupdate=1
     fi
     cd $pkgname
     if ! (( skipupdate )) && [[ ! -v opts[-noupdate] ]] ; then
-        echo "Updating $pkgname..."
+        printf 'Updating %s...\n' $pkgname
         update-$pkgname
     fi
     if [[ ! -v opts[-nobuild] ]] ; then
-        echo "Building $pkgname..."
+        printf 'Building %s...\n' $pkgname
         if [[ -v functions[build-$pkgname] ]] ; then
             build-$pkgname
         else
             printf 'Nothing to build for %s.\n' $pkgname
         fi
     fi
-    echo "Installing $pkgname..."
+    printf 'Installing %s...' $pkgname
     install-$pkgname
     if [[ ! -v opts[-nostow] ]] ; then
-        echo "Stowing $pkgname..."
+        printf 'Stowing %s...\n' $pkgname
         stow-$pkgname
     fi
 }
