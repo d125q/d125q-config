@@ -987,7 +987,7 @@ function process-pkg {
         if [[ -v functions[build-$pkgname] ]] ; then
             build-$pkgname
         else
-            printf 'Nothing to build for %s.\n' $pkgname
+            echo "Nothing to build for $pkgname"
         fi
     fi
     echo "Installing $pkgname..."
