@@ -93,7 +93,7 @@
               :buffer "*helm project buffers*"))
     (user-error "Could not retrieve the current project")))
 
-;; `helm-project-grep'
+;; * `helm-project-grep'
 
 (defun helm-project-grep (arg)
   "Grep the current project using Helm."
