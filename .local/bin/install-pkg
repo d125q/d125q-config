@@ -38,6 +38,7 @@ typeset -a pkgnames=(
     libertinus
     libgit2
     libsynctex
+    mongo-c-driver
     ncurses
     noto-cjk
     noto-emoji
@@ -566,6 +567,34 @@ function install-libgit2 {
 }
 
 function stow-libgit2 {
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** mongo-c-driver
+
+function clone-mongo-c-driver {
+    git clone -b master --depth 1 'git@github.com:mongodb/mongo-c-driver.git'
+}
+
+function update-mongo-c-driver {
+    git pull --ff-only --depth 1
+}
+
+function build-mongo-c-driver {
+    mkdir -p cmake-build
+    cd cmake-build
+    cmake -DCMAKE_INSTALL_PREFIX=$pkgprefix -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF ..
+    cmake --build .
+    cd -
+}
+
+function install-mongo-c-driver {
+    cd cmake-build
+    cmake --build . --target install
+    cd -
+}
+
+function stow-mongo-c-driver {
     stow -d $pkgdir -R $pkgname
 }
 
