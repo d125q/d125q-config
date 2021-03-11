@@ -44,6 +44,7 @@ typeset -a pkgnames=(
     noto-emoji
     noto-fonts
     otfcc
+    password-store
     premake5
     pyenv
     rbenv
@@ -758,6 +759,24 @@ function install-otfcc {
 }
 
 function stow-otfcc {
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** password-store
+
+function clone-password-store {
+    git clone -b master --depth 1 'git@github.com:zx2c4/password-store.git'
+}
+
+function update-password-store {
+    git pull --ff-only --depth 1
+}
+
+function install-password-store {
+    make PREFIX=$pkgprefix WITH_ZSHCOMP=yes install
+}
+
+function stow-password-store {
     stow -d $pkgdir -R $pkgname
 }
 
