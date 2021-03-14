@@ -94,7 +94,7 @@ function clone-DancingScript {
 }
 
 function update-DancingScript {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function install-DancingScript {
@@ -113,7 +113,7 @@ function clone-Iosevka {
 }
 
 function update-Iosevka {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-Iosevka {
@@ -210,7 +210,7 @@ function clone-alacritty {
 }
 
 function update-alacritty {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-alacritty {
@@ -252,7 +252,7 @@ function clone-check {
 }
 
 function update-check {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-check {
@@ -282,7 +282,7 @@ function clone-cppcheck {
 }
 
 function update-cppcheck {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-cppcheck {
@@ -313,7 +313,7 @@ function clone-ctags {
 }
 
 function update-ctags {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-ctags {
@@ -339,7 +339,7 @@ function clone-emacs {
 }
 
 function update-emacs {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-emacs {
@@ -384,7 +384,7 @@ function clone-fontforge {
 }
 
 function update-fontforge {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-fontforge {
@@ -417,7 +417,7 @@ function clone-fontship {
 }
 
 function update-fontship {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-fontship {
@@ -447,7 +447,7 @@ function clone-girara {
 }
 
 function update-girara {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-girara {
@@ -470,7 +470,7 @@ function clone-git {
 }
 
 function update-git {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-git {
@@ -496,7 +496,7 @@ function clone-grml-etc-core {
 }
 
 function update-grml-etc-core {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-grml-etc-core {
@@ -524,7 +524,7 @@ function clone-libertinus {
 }
 
 function update-libertinus {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-libertinus {
@@ -550,7 +550,7 @@ function clone-libgit2 {
 }
 
 function update-libgit2 {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-libgit2 {
@@ -578,7 +578,7 @@ function clone-mongo-c-driver {
 }
 
 function update-mongo-c-driver {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-mongo-c-driver {
@@ -660,7 +660,7 @@ function clone-ncurses {
 }
 
 function update-ncurses {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-ncurses {
@@ -683,7 +683,7 @@ function clone-noto-cjk {
 }
 
 function update-noto-cjk {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function install-noto-cjk {
@@ -703,7 +703,7 @@ function clone-noto-emoji {
 }
 
 function update-noto-emoji {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function install-noto-emoji {
@@ -724,7 +724,7 @@ function clone-noto-fonts {
 }
 
 function update-noto-fonts {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function install-noto-fonts {
@@ -744,7 +744,7 @@ function clone-otfcc {
 }
 
 function update-otfcc {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-otfcc {
@@ -769,7 +769,7 @@ function clone-password-store {
 }
 
 function update-password-store {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function install-password-store {
@@ -787,7 +787,7 @@ function clone-premake5 {
 }
 
 function update-premake5 {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-premake5 {
@@ -814,7 +814,8 @@ function clone-pyenv {
 }
 
 function update-pyenv {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
+    git pull --depth=1 --rebase --allow-unrelated-histories
 }
 
 function install-pyenv {
@@ -837,9 +838,9 @@ function clone-rbenv {
 }
 
 function update-rbenv {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
     cd plugins/ruby-build
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
     cd -
 }
 
@@ -883,7 +884,8 @@ function clone-tmux {
 }
 
 function update-tmux {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-tmux {
@@ -909,7 +911,7 @@ function clone-vim {
 }
 
 function update-vim {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-vim {
@@ -951,7 +953,7 @@ function clone-zathura {
 }
 
 function update-zathura {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-zathura {
@@ -974,7 +976,7 @@ function clone-zathura-pdf-poppler {
 }
 
 function update-zathura-pdf-poppler {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-zathura-pdf-poppler {
@@ -997,7 +999,7 @@ function clone-zsh {
 }
 
 function update-zsh {
-    git pull --ff-only --depth 1
+    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-zsh {
