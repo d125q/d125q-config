@@ -174,15 +174,15 @@ function stow-Iosevka {
 ## ** R
 
 function clone-R {
-    svn checkout 'https://svn.r-project.org/R/tags/R-4-0-3/' R
+    svn checkout 'https://svn.r-project.org/R/tags/R-4-0-4/' R
 }
 
 function update-R {
     svn update
-    ./tools/rsync-recommended
 }
 
 function build-R {
+    ./tools/rsync-recommended
     ./configure --prefix=$pkgprefix
     make
     make info
