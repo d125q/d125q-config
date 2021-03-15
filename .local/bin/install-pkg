@@ -885,7 +885,6 @@ function clone-tmux {
 
 function update-tmux {
     git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
-    git pull --depth=1 --rebase --update-shallow --allow-unrelated-histories
 }
 
 function build-tmux {
