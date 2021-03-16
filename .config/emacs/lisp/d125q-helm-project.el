@@ -135,33 +135,43 @@
 
 ;; ** :action
 
+(defun hpsp/project--remove-from-project-list (_project)
+  "Remove all marked projects from the project list."
+  (with-helm-buffer
+    (mapc #'project--remove-from-project-list (helm-marked-candidates))
+    (helm-force-update)))
+
 (defmacro hpsp/define-actions (&rest spec)
   "Define actions for HPSP out of SPEC."
-  `(progn
-     ,@(cl-loop for (name . command) in spec
-                for action = (intern (format "hpsp/%s" command))
-                collect `(defun ,action (project)
-                           ,(format "Run `%s' in PROJECT." command)
-                           (let ((default-directory project)
-                                 (project-current-inhibit-prompt t))
-                             (call-interactively #',command)))
-                into defuns
-                collect `(cons ,name ',action)
-                into values
-                finally return (nreverse
-                                (cons `(defvar hpsp/actions
-                                         (list ,@values)
-                                         "Actions for `helm-project-switch-project'.")
-                                      (nreverse defuns))))))
+  (let (defuns values action)
+    (while spec
+      (cl-destructuring-bind (name command &key skip-defun) (pop spec)
+        (setq action (intern (format "hpsp/%s" command)))
+        (unless skip-defun
+          (push `(defun ,action (project)
+                   ,(format "Run `%s' in PROJECT." command)
+                   (let ((default-directory project)
+                         (project-current-inhibit-prompt t))
+                     (call-interactively #',command)))
+                defuns))
+        (push `(cons ,name ',action) values)))
+    `(progn
+       ,@(nreverse
+          (cons `(defvar hpsp/actions
+                   (list ,@(nreverse values))
+                   "Actions for `helm-project-switch-project'.")
+                defuns)))))
 
-(hpsp/define-actions ("Magit status" . magit-status)
-                     ("VC-Dir" . vc-dir)
-                     ("Dired" . dired)
-                     ("Find files" . helm-project-find-files)
-                     ("List buffers" . helm-project-list-buffers)
-                     ("Shell" . project-shell)
-                     ("Eshell" . project-eshell)
-                     ("Find regexp" . project-find-regexp))
+(hpsp/define-actions
+ ("Magit status" magit-status)
+ ("VC-Dir" vc-dir)
+ ("Dired" dired)
+ ("Find files" helm-project-find-files)
+ ("List buffers" helm-project-list-buffers)
+ ("Shell" project-shell)
+ ("Eshell" project-eshell)
+ ("Find regexp" project-find-regexp)
+ ("Remove from project list" project--remove-from-project-list :skip-defun t))
 
 ;; ** :action-transformer
 
@@ -184,38 +194,50 @@ is possible."
 
 ;; ** :keymap
 
+(defun hpsp/run-project--remove-from-project-list ()
+  "Run `project--remove-from-project-list' with a key binding."
+  (interactive)
+  (with-helm-alive-p
+    (helm-set-attr 'project--remove-from-project-list
+                   '(hpsp/project--remove-from-project-list . never-split))
+    (helm-execute-persistent-action 'project--remove-from-project-list)))
+(put 'hpsp/run-project--remove-from-project-list 'helm-only t)
+
 (defmacro hpsp/define-keymap (&rest spec)
   "Define a keymap for HPSP out of SPEC."
-  `(progn
-     ,@(cl-loop for (key . command) in spec
-                for runner = (intern (format "hpsp/run-%s" command))
-                for action = (intern (format "hpsp/%s" command))
-                collect `(defun ,runner ()
+  (let (defuns props kbds runner action)
+    (while spec
+      (cl-destructuring-bind (key command &key skip-defun) (pop spec)
+        (setq runner (intern (format "hpsp/run-%s" command))
+              action (intern (format "hpsp/%s" command)))
+        (unless skip-defun
+          (push `(defun ,runner ()
                            ,(format "Run `%s' with a key binding." command)
                            (interactive)
                            (with-helm-alive-p
                              (helm-exit-and-execute-action ',action)))
-                into defuns
-                collect `(put ',runner 'helm-only t)
-                into props
-                collect `(define-key map (kbd ,key) ',runner)
-                into key-bindings
-                finally return (nreverse
-                                (cons `(defvar hpsp/map
-                                         (let ((map (make-sparse-keymap)))
-                                           ,@key-bindings
-                                           map)
-                                         "Keymap for `helm-project-switch-project'.")
-                                      (nreverse (nconc defuns props)))))))
+                defuns)
+          (push `(put ',runner 'helm-only t) props))
+        (push `(define-key map (kbd ,key) ',runner) kbds)))
+    `(progn
+       ,@(nreverse
+          (cons `(defvar hpsp/map
+                   (let ((map (make-sparse-keymap)))
+                     ,@(nreverse kbds)
+                     map)
+                   "Keymap for `helm-project-switch-project'.")
+                (nconc props defuns))))))
 
-(hpsp/define-keymap ("C-x g" . magit-status)
-                    ("C-x v d" . vc-dir)
-                    ("C-x d" . dired)
-                    ("C-x C-f" . helm-project-find-files)
-                    ("C-x b" . helm-project-list-buffers)
-                    ("C-c C-s" . project-shell)
-                    ("C-c C-e" . project-eshell)
-                    ("M-s" . project-find-regexp))
+(hpsp/define-keymap
+ ("C-x g" magit-status)
+ ("C-x v d" vc-dir)
+ ("C-x d" dired)
+ ("C-x C-f" helm-project-find-files)
+ ("C-x b" helm-project-list-buffers)
+ ("C-c C-s" project-shell)
+ ("C-c C-e" project-eshell)
+ ("M-s" project-find-regexp)
+ ("M-D" project--remove-from-project-list :skip-defun t))
 
 ;; ** Main function with associated data
 
