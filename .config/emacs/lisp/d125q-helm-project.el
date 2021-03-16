@@ -21,6 +21,7 @@
 (require 'helm-grep)
 (require 'project)
 (require 'magit)
+(autoload 'vc-git-grep "vc-git")
 
 ;; * `helm-project-find-files'
 
@@ -171,6 +172,13 @@
  ("Shell" project-shell)
  ("Eshell" project-eshell)
  ("Find regexp" project-find-regexp)
+ ("Run `grep'" grep)
+ ("Run `lgrep'" lgrep)
+ ("Run `rgrep'" rgrep)
+ ("Run `zrgrep'" zrgrep)
+ ("Run `rg'" rg)
+ ("Run `deadgrep'" deadgrep)
+ ("Run `vc-git-grep'" vc-git-grep)
  ("Remove from project list" project--remove-from-project-list :skip-defun t))
 
 ;; ** :action-transformer
@@ -178,7 +186,8 @@
 (defun hpsp/action-transformer (actions candidate)
   (if (magit-toplevel candidate)
       actions
-    (rassq-delete-all 'magit-status actions)))
+    (dolist (action '(magit-status vc-git-grep) actions)
+      (setq actions (rassq-delete-all action actions)))))
 
 ;; ** :persistent-action-if
 
@@ -230,13 +239,20 @@ is possible."
 
 (hpsp/define-keymap
  ("C-x g" magit-status)
- ("C-x v d" vc-dir)
+ ("C-x v" vc-dir)
  ("C-x d" dired)
  ("C-x C-f" helm-project-find-files)
  ("C-x b" helm-project-list-buffers)
- ("C-c C-s" project-shell)
- ("C-c C-e" project-eshell)
- ("M-s" project-find-regexp)
+ ("C-c p s" project-shell)
+ ("C-c p e" project-eshell)
+ ("C-x p g" project-find-regexp)
+ ("M-s g g" grep)
+ ("M-s g l" lgrep)
+ ("M-s g r" rgrep)
+ ("M-s g z" zrgrep)
+ ("M-s d" deadgrep)
+ ("M-s r" rg)
+ ("M-s v" vc-git-grep)
  ("M-D" project--remove-from-project-list :skip-defun t))
 
 ;; ** Main function with associated data
