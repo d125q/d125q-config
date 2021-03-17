@@ -94,7 +94,8 @@ function clone-DancingScript {
 }
 
 function update-DancingScript {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function install-DancingScript {
@@ -113,7 +114,8 @@ function clone-Iosevka {
 }
 
 function update-Iosevka {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-Iosevka {
@@ -210,7 +212,8 @@ function clone-alacritty {
 }
 
 function update-alacritty {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-alacritty {
@@ -252,7 +255,8 @@ function clone-check {
 }
 
 function update-check {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-check {
@@ -282,7 +286,8 @@ function clone-cppcheck {
 }
 
 function update-cppcheck {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/main
 }
 
 function build-cppcheck {
@@ -313,7 +318,8 @@ function clone-ctags {
 }
 
 function update-ctags {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-ctags {
@@ -339,7 +345,8 @@ function clone-emacs {
 }
 
 function update-emacs {
-    git pull -r --depth=1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-emacs {
@@ -384,7 +391,8 @@ function clone-fontforge {
 }
 
 function update-fontforge {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-fontforge {
@@ -417,7 +425,8 @@ function clone-fontship {
 }
 
 function update-fontship {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-fontship {
@@ -447,7 +456,8 @@ function clone-girara {
 }
 
 function update-girara {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-girara {
@@ -470,7 +480,8 @@ function clone-git {
 }
 
 function update-git {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-git {
@@ -496,7 +507,8 @@ function clone-grml-etc-core {
 }
 
 function update-grml-etc-core {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-grml-etc-core {
@@ -524,7 +536,8 @@ function clone-libertinus {
 }
 
 function update-libertinus {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-libertinus {
@@ -550,7 +563,8 @@ function clone-libgit2 {
 }
 
 function update-libgit2 {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/main
 }
 
 function build-libgit2 {
@@ -578,7 +592,8 @@ function clone-mongo-c-driver {
 }
 
 function update-mongo-c-driver {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-mongo-c-driver {
@@ -660,7 +675,8 @@ function clone-ncurses {
 }
 
 function update-ncurses {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-ncurses {
@@ -683,7 +699,8 @@ function clone-noto-cjk {
 }
 
 function update-noto-cjk {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/main
 }
 
 function install-noto-cjk {
@@ -703,7 +720,8 @@ function clone-noto-emoji {
 }
 
 function update-noto-emoji {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/main
 }
 
 function install-noto-emoji {
@@ -724,7 +742,8 @@ function clone-noto-fonts {
 }
 
 function update-noto-fonts {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/main
 }
 
 function install-noto-fonts {
@@ -744,7 +763,8 @@ function clone-otfcc {
 }
 
 function update-otfcc {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-otfcc {
@@ -769,7 +789,8 @@ function clone-password-store {
 }
 
 function update-password-store {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function install-password-store {
@@ -787,7 +808,8 @@ function clone-premake5 {
 }
 
 function update-premake5 {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-premake5 {
@@ -814,8 +836,8 @@ function clone-pyenv {
 }
 
 function update-pyenv {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
-    git pull -r --depth 1 --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function install-pyenv {
@@ -838,9 +860,11 @@ function clone-rbenv {
 }
 
 function update-rbenv {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
     cd plugins/ruby-build
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
     cd -
 }
 
@@ -884,7 +908,8 @@ function clone-tmux {
 }
 
 function update-tmux {
-    git pull -r --depth=1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-tmux {
@@ -910,7 +935,8 @@ function clone-vim {
 }
 
 function update-vim {
-    git pull -r --depth=1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-vim {
@@ -952,7 +978,8 @@ function clone-zathura {
 }
 
 function update-zathura {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-zathura {
@@ -975,7 +1002,8 @@ function clone-zathura-pdf-poppler {
 }
 
 function update-zathura-pdf-poppler {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-zathura-pdf-poppler {
@@ -998,7 +1026,8 @@ function clone-zsh {
 }
 
 function update-zsh {
-    git pull -r --depth 1 --update-shallow --allow-unrelated-histories
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
 }
 
 function build-zsh {
