@@ -3,13 +3,13 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 2021-03-09
+;; Version: 20210318T145414+0100
 ;; Keywords: convenience
 
 ;;; Commentary:
 
-;; These are utilities for Emacs designed to make various tasks
-;; easier.  Special focus is put on making it more convenient to
+;; These are utilities for GNU Emacs designed to make various tasks
+;; easier.  Special focus is placed on making it more convenient to
 ;; configure things such as key bindings.
 
 ;;; Code:
@@ -526,5 +526,12 @@ If MAP is nil, the key binding will be made global."
 ;; * Postamble
 
 (provide 'd125q-utils)
+
+;;; Local Variables:
+;;; eval: (add-hook 'before-save-hook 'time-stamp nil t)
+;;; time-stamp-start: "^;; Version: "
+;;; time-stamp-format: "%Y%02m%02dT%02H%02M%02S%5z"
+;;; time-stamp-end: "$"
+;;; End:
 
 ;;; d125q-utils.el ends here
