@@ -3,13 +3,15 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 2021-03-14
+;; Version: 20210317T153237+0100
 ;; Keywords: convenience
 
 ;;; Commentary:
 
-;; This is a Helm interface to `project.el' providing Helm-powered
-;; variants of common commands.
+;; This is an interface to `project.el' which provides Helm-powered
+;; commands to find files, list buffers and grep in projects.  It also
+;; provides `helm-project-switch-project' to facilitate switching
+;; between projects and executing commands against them.
 
 ;;; Code:
 
@@ -287,5 +289,12 @@ is possible."
 ;; * Postamble
 
 (provide 'd125q-helm-project)
+
+;;; Local Variables:
+;;; eval: (add-hook 'before-save-hook 'time-stamp nil t)
+;;; time-stamp-start: "^;; Version: "
+;;; time-stamp-format: "%Y%02m%02dT%02H%02M%02S%5z"
+;;; time-stamp-end: "$"
+;;; End:
 
 ;;; d125q-helm-project.el ends here
