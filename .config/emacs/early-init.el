@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210317T153511+0100
+;; Version: 20210319T103219+0100
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -16,13 +16,38 @@
 
 ;; * Preamble
 
-(push (expand-file-name "lisp" user-emacs-directory) load-path)
+(push (locate-user-emacs-file "lisp" ".emacs-lisp") load-path)
 (require 'd125q-utils)
+
+(defvar secret-plist-file (locate-user-emacs-file "secret-plist.gpg" ".secret-plist.gpg")
+  "File in which secret data is stored.")
+
+(defvar secret-plist (when (file-exists-p secret-plist-file)
+                       (with-temp-buffer
+                         (insert-file-contents secret-plist-file)
+                         (read (current-buffer))))
+  "Decrypted contents of `secret-plist-file'.")
+
+;; * Evaluation
+
+(customize-variables
+  eval-expression-debug-on-error nil
+  user-emacs-directory-warning nil
+  load-prefer-newer t)
+
+;; * Personal data
+
+(plist/customize-variables (secret-plist user)
+  user-full-name
+  user-mail-address)
+
+(customize-variables
+  plstore-encrypt-to user-mail-address)
 
 ;; * Visuals
 
 (customize-variables
-  ;; Frame parameters
+  ;; frame parameters
   default-frame-alist '((undecorated . nil)
                         (vertical-scroll-bars . nil)
                         (horizontal-scroll-bars . nil)
@@ -31,21 +56,21 @@
                         (border-width . 0)
                         (internal-border-width . 0)
                         (fullscreen . maximized))
-  ;; Resizing of mini frames and windows
+  ;; resizing of mini frames and windows
   resize-mini-frames t
   resize-mini-windows 'grow-only
-  ;; Tool bars
+  ;; tool bars
   tool-bar-mode nil
-  ;; Dialog boxes
+  ;; dialog boxes
   use-dialog-box nil
   use-file-dialog nil
-  ;; Menu bars and prompts
+  ;; menu bars and prompts
   menu-bar-mode nil
   menu-prompting t
-  ;; Empty lines and buffer boundaries
+  ;; empty lines and buffer boundaries
   indicate-empty-lines t
   indicate-buffer-boundaries 'left
-  ;; Bell
+  ;; bell
   visible-bell t
   ;; X11-related things
   x-stretch-cursor t
