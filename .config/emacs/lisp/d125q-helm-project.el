@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210317T153237+0100
+;; Version: 20210319T103834+0100
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -18,11 +18,10 @@
 ;; * Preamble
 
 (require 'helm)
-(require 'helm-source)
 (require 'helm-files)
-(require 'helm-grep)
 (require 'project)
-(require 'magit)
+
+(autoload 'magit-toplevel "magit-git")
 (autoload 'vc-git-grep "vc-git")
 
 ;; * `helm-project-find-files'
