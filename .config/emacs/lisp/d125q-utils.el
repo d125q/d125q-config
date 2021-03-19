@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210318T145414+0100
+;; Version: 20210319T095347+0100
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -413,8 +413,9 @@ If MAP is nil, the key binding will be made global."
 (cl-defmacro define-key-bindings ((&key map prefix prepend pkg ext-p) &rest spec)
   "Define key bindings with SPEC.
 
-- SPEC is a list of (KEY CMD) such that each CMD will be bound to
-  its corresponding KEY.
+- SPEC is a list of (KEY CMD &key NODECL) such that each CMD will
+  be bound to its corresponding KEY.  If NODECL is non-nil, then
+  CMD will not be declared as being defined by PKG.
 
 - MAP is a keymap that will contain the key bindings.  If it is
   nil, the key bindings will be made global.
@@ -453,8 +454,9 @@ If MAP is nil, the key binding will be made global."
                (setq map prefix-cmd))))) ; Use `prefix-cmd' as the keymap.
         bind-key-exprs)
     (while spec
-      (cl-destructuring-bind (key cmd) (pop spec)
-        (push cmd fns)
+      (cl-destructuring-bind (key cmd &key nodecl) (pop spec)
+        (unless nodecl
+          (push cmd fns))
         (when prepend
           (setq key (cond
                      ((and (vectorp prepend) (vectorp key))
