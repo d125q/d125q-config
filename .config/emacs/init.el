@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210321T170321+0100
+;; Version: 20210321T171021+0100
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -249,7 +249,8 @@ will be used for this purpose."
 ;; * `server.el'
 
 ;; for some reason GNOME ignores the `raise-frame' in
-;; `server-switch-buffer', so we use wmctrl on top of it
+;; `server-switch-buffer' and instead only displays a "GNU Emacs is
+;; ready" notification, so we use `wmctrl' on top of it
 (advice-add 'server-switch-buffer :after (lambda (&rest _)
                                            (when server-raise-frame
                                              (wmctrl-raise-frame))))
