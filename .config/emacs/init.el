@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210321T171021+0100
+;; Version: 20210321T191406+0100
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -887,6 +887,13 @@ will be used for this purpose."
   modus-themes-mode-line '3d)
 
 (modus-themes-load-vivendi)
+
+;; ** Faces
+
+(customize-faces
+ (t
+  (fixed-pitch (:inherit default))
+  (fixed-pitch-serif (:inherit default))))
 
 ;; * Postamble
 
