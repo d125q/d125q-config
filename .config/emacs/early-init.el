@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210319T103219+0100
+;; Version: 20210321T155707+0100
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -16,10 +16,11 @@
 
 ;; * Preamble
 
-(push (locate-user-emacs-file "lisp" ".emacs-lisp") load-path)
+(require 'cl-lib)
+(cl-pushnew (locate-user-emacs-file "lisp" ".emacs-lisp") load-path)
 (require 'd125q-utils)
 
-(defvar secret-plist-file (locate-user-emacs-file "secret-plist.gpg" ".secret-plist.gpg")
+(defvar secret-plist-file (locate-user-emacs-file "secret-plist.gpg")
   "File in which secret data is stored.")
 
 (defvar secret-plist (when (file-exists-p secret-plist-file)
@@ -44,10 +45,11 @@
 (customize-variables
   plstore-encrypt-to user-mail-address)
 
-;; * Visuals
+;; * Appearance
+
+;; ** Frame parameters
 
 (customize-variables
-  ;; frame parameters
   default-frame-alist '((undecorated . nil)
                         (vertical-scroll-bars . nil)
                         (horizontal-scroll-bars . nil)
@@ -55,24 +57,45 @@
                         (tool-bar-lines . 0)
                         (border-width . 0)
                         (internal-border-width . 0)
-                        (fullscreen . maximized))
-  ;; resizing of mini frames and windows
+                        (fullscreen . maximized)))
+
+;; ** Resizing of mini frames and windows
+
+(customize-variables
   resize-mini-frames t
-  resize-mini-windows 'grow-only
-  ;; tool bars
-  tool-bar-mode nil
-  ;; dialog boxes
+  resize-mini-windows 'grow-only)
+
+;; ** Tool bars
+
+(customize-variables
+  tool-bar-mode nil)
+
+;; ** Dialog boxes
+
+(customize-variables
   use-dialog-box nil
-  use-file-dialog nil
-  ;; menu bars and prompts
+  use-file-dialog nil)
+
+;; ** Menu bars and prompts
+
+(customize-variables
   menu-bar-mode nil
-  menu-prompting t
-  ;; empty lines and buffer boundaries
+  menu-prompting t)
+
+;; ** Empty lines and buffer boundaries
+
+(customize-variables
   indicate-empty-lines t
-  indicate-buffer-boundaries 'left
-  ;; bell
-  visible-bell t
-  ;; X11-related things
+  indicate-buffer-boundaries 'left)
+
+;; ** Bell
+
+(customize-variables
+  visible-bell t)
+
+;; ** X11-related things
+
+(customize-variables
   x-stretch-cursor t
   x-underline-at-descent-line t
   x-use-underline-position-properties t)
@@ -154,7 +177,8 @@
 (put 'narrow-to-region 'disabled nil)
 
 (customize-variables
-  safe-local-variable-values '((TeX-command-extra-options . "-shell-escape")))
+  safe-local-variable-values
+  '((TeX-command-extra-options . "-shell-escape")))
 
 ;; * History
 

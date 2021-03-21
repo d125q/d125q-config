@@ -1,3 +1,5 @@
 /.config/emacs/custom.el
 /.config/emacs/secret-plist.gpg
+/.authinfo
+/.authinfo.gpg
 /tnsnames.ora

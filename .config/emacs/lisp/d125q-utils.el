@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210319T095347+0100
+;; Version: 20210321T170734+0100
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -37,9 +37,11 @@
 (defun mapsyms (fun sexpr)
   "Map FUN over the symbols of SEXPR.
 
-\(mapsyms (lambda (sym) (intern (format \"prefix:%s\" sym)))
-         \\='(setq var1 val1 var2 val2))
-    => (prefix:setq prefix:var1 prefix:val1 prefix:var2 prefix:val2)"
+\(mapsyms (lambda (sym) (intern (format \"namespace-%s\" sym)))
+         \\='(setq var1 val1
+                var2 val2))
+    => (namespace-setq namespace-var1 namespace-val1
+                       namespace-var2 namespace-val2)"
   (cond
    ((and (symbolp sexpr) sexpr) (funcall fun sexpr))
    ((atom sexpr) sexpr)
@@ -48,10 +50,10 @@
 (defun make-string-abbreviator (strings)
   "Make an abbreviator for STRINGS.
 
-\(let* ((strings '(\"aye\" \"hello\" \"helium\" \"hooray\"))
+\(let* ((strings \\='(\"aye\" \"captain\" \"snow\" \"sled\"))
        (abbreviator (make-string-abbreviator strings)))
   (mapcar (lambda (string) (gethash string abbreviator)) strings))
-    => (\"a\" \"hell\" \"heli\" \"ho\")"
+    => (\"a\" \"c\" \"sn\" \"sl\")"
   (cl-assert (cl-every #'stringp strings))
   (setq strings (seq-uniq strings #'equal))
   (cl-loop
@@ -66,29 +68,28 @@
               (let* ((prefix (seq-subseq string 0 len))
                      (strings (cons string (gethash prefix prefix->strings))))
                 (puthash prefix strings prefix->strings))
-            ;; In this case, `string' is a proper substring of some
-            ;; other member of `strings' – consider it to abbreviate
-            ;; to itself.
+            ;; in this case, `string' is a proper substring of some
+            ;; other member of `strings', so we consider it to
+            ;; "abbreviate" to itself
             (error (puthash string string string->prefix))))
    do (cl-loop
-       ;; If the prefix maps to only one element, it's good to go!
+       ;; if the prefix maps to only one element, it's good to go
        for prefix being the hash-keys of prefix->strings
        using (hash-values strings)
        unless (cdr strings)
        do (puthash (car strings) prefix string->prefix))
-   ;; Prepare for the next iteration.
+   ;; prepare for the next iteration
    do (clrhash prefix->strings)
    finally return string->prefix))
 
 (defun decrypt-file (file)
   "Decrypt the contents of FILE.
 
-\(defvar secret-data (read (decrypt-file
-                           (expand-file-name \"secret-data.gpg\"
-                                             user-emacs-directory))))
-    => The file \"secret-data.gpg\" will be decrypted and read
-       as a Lisp expression whose value will be stored in the
-       `secret-data' variable."
+\(defvar secrets (read
+		 (decrypt-file
+		  (locate-user-emacs-file \"secrets.gpg\")))
+    => The GPG-encrypted file will be decrypted, read as a Lisp
+       expression and stored in the `secrets' variable."
   (setq file (expand-file-name file))
   (let ((context (epg-make-context epa-protocol)))
     (epg-context-set-passphrase-callback
@@ -97,7 +98,7 @@
     (epg-context-set-progress-callback
      context
      (cons #'epa-progress-callback-function
-           (format "Decrypting %s..." (file-name-nondirectory file))))
+           (format "Decrypting %s…" (file-name-nondirectory file))))
     (condition-case error
         (epg-decrypt-file context file nil)
       (error
@@ -105,7 +106,7 @@
        (signal (car error) (cdr error))))))
 
 (defun wmctrl-raise-frame (&optional frame)
-  "Raise FRAME using wmctrl.
+  "Raise FRAME using `wmctrl'.
 
 If FRAME is nil, the selected frame is used."
   (setq frame (or frame (selected-frame)))
@@ -173,13 +174,13 @@ also `with-eval-after-load'.
            (define-key ido-common-completion-map
              (kbd \"C-x g\") \\='ido-enter-magit-status)))"
   (declare (indent 3))
-  (let ((file (when pkg (format (if ext-p "ext:%s" "%s") pkg)))
-        (defvar-exprs (mapcar (lambda (var) `(defvar ,var)) vars)))
-    (macroexp-progn
-     (if file
-         (nconc defvar-exprs
-                (mapcar (lambda (fn) `(declare-function ,fn ,file)) fns)
-                `((with-eval-after-load ',pkg ,@body)))
+  (let ((defvar-exprs (mapcar (lambda (var) `(defvar ,var)) vars)))
+    (if-let ((file (when pkg (format (if ext-p "ext:%s" "%s") pkg))))
+        `(with-eval-after-load ',pkg
+           ,@(nconc defvar-exprs
+                    (mapcar (lambda (fn) `(declare-function ,fn ,file)) fns)
+                    body))
+      (macroexp-progn
        (nconc defvar-exprs body)))))
 
 (defmacro deflambda (args &rest body)
@@ -211,21 +212,20 @@ also `with-eval-after-load'.
            (interactive)
            (setq indent-tabs-mode (not indent-tabs-mode))))"
   (cl-assert (symbolp sym))
-  (let* ((name (symbol-name sym))
-         (turn-on (intern (format "turn-on-%s" name)))
-         (turn-off (intern (format "turn-off-%s" name)))
-         (toggle (intern (format "toggle-%s" name))))
+  (let* ((turn-on (intern (format "turn-on-%s" sym)))
+         (turn-off (intern (format "turn-off-%s" sym)))
+         (toggle (intern (format "toggle-%s" sym))))
     `(progn
        (defun ,turn-on ()
-         ,(format "Turn on `%s'." name)
+         ,(format "Turn `%s' on." sym)
          (interactive)
          (setq ,sym t))
        (defun ,turn-off ()
-         ,(format "Turn off `%s'." name)
+         ,(format "Turn `%s' off." sym)
          (interactive)
          (setq ,sym nil))
        (defun ,toggle ()
-         ,(format "Toggle `%s'." name)
+         ,(format "Toggle `%s'." sym)
          (interactive)
          (setq ,sym (not ,sym))))))
 
@@ -254,8 +254,8 @@ also `with-eval-after-load'.
   its corresponding VAL.
 
 - PKG is a symbol that is assumed to define each VAR, and the
-  settings will take effect only after it has been loaded.
-  If it is nil, the settings will take effect immediately.
+  settings will take effect only after it has been loaded.  If it
+  is nil, the settings will take effect immediately.
 
 - If EXT-P is non-nil, PKG is assumed to be an external package."
   (declare (indent 1))
@@ -319,14 +319,14 @@ For details, see `custom-set-faces' and `defface'.
 - VARS is a list of VAR.
 
 - PKG is a symbol that is assumed to define each VAR, and the
-  settings will take effect only after it has been loaded.
-  If it is nil, the settings will take effect immediately.
+  settings will take effect only after it has been loaded.  If it
+  is nil, the settings will take effect immediately.
 
 - If EXT-P is non-nil, PKG is assumed to be an external package.
 
 \(plist/set-variables (plstore erc :pkg erc) erc-password)
-    => Once `erc' gets loaded, `erc-password' will be set from
-       (plstore-get plstore \"erc\")."
+    => Once `erc' has been loaded, `erc-password' will be set
+       from (plstore-get plstore \"erc\")."
   (declare (indent 1))
   `(set-variables (:pkg ,pkg :ext-p ,ext-p)
      ,@(cl-loop
@@ -353,14 +353,14 @@ For details, see `custom-set-faces' and `defface'.
 - VARS is a list of VAR.
 
 - PKG is a symbol that is assumed to define each VAR, and the
-  settings will take effect only after it has been loaded.
-  If it is nil, the settings will take effect immediately.
+  settings will take effect only after it has been loaded.  If it
+  is nil, the settings will take effect immediately.
 
 - If EXT-P is non-nil, PKG is assumed to be an external package.
 
-\(plist/set-variables (secret-plist erc :pkg erc) erc-password)
-    => Once `erc' gets loaded, `erc-password' will be set from
-       (plist-get secret-plist :erc)."
+\(plist/set-variables (plist erc :pkg erc) erc-password)
+    => Once `erc' has been loaded, `erc-password' will be set
+       from (plist-get plist :erc)."
   (declare (indent 1))
   `(set-variables (:pkg ,pkg :ext-p ,ext-p)
      ,@(cl-loop
@@ -372,11 +372,11 @@ For details, see `custom-set-faces' and `defface'.
 (cl-defmacro plist/customize-variables ((plist name) &rest vars)
   "Using the PLIST entry with NAME, customize VARS.
 
-\(plist/customize-variables (secret-data gnus)
+\(plist/customize-variables (plist gnus)
   gnus-select-method
   gnus-secondary-select-methods)
     => `gnus-select-method' and `gnus-secondary-select-methods'
-       will be customized from (plist-get secret-plist :gnus)."
+       will be customized from (plist-get plist :gnus)."
   (declare (indent 1))
   `(customize-variables
      ,@(cl-loop
@@ -439,7 +439,7 @@ If MAP is nil, the key binding will be made global."
   (\"d\" pyvenv-deactivate)
   (\"c\" pyvenv-create))
     => Once `pyvenv' gets loaded (e.g., by running `pyvenv-mode'),
-       create the specified key bindings under the \"C-c v\" prefix
+       create the specified key bindings under the C-c v prefix
        and place them in `pyvenv-mode-map'."
   (declare (indent 1))
   (let ((vars (when map (list map)))
@@ -451,7 +451,7 @@ If MAP is nil, the key binding will be made global."
                  `((defvar ,prefix-cmd)
                    (define-prefix-command ',prefix-cmd)
                    (bind-key ,map ,prefix ,prefix-cmd))
-               (setq map prefix-cmd))))) ; Use `prefix-cmd' as the keymap.
+               (setq map prefix-cmd)))))  ; use `prefix-cmd' as the keymap
         bind-key-exprs)
     (while spec
       (cl-destructuring-bind (key cmd &key nodecl) (pop spec)
@@ -464,8 +464,13 @@ If MAP is nil, the key binding will be made global."
                      ((and (stringp prepend) (stringp key))
                       (concat prepend " " key))
                      (t
-                      (user-error "PREPEND and KEY must both be vectors or strings\nPREPEND = %s\nKEY = %s"
-                                  prepend key)))))
+                      (user-error
+                       (mapconcat
+                        #'identity
+                        '("PREPEND and KEY must both be vectors or strings"
+                          "PREPEND = %s" "KEY = %s")
+                        "\n")
+                       prepend key)))))
         (push `(bind-key ,map ,key ',cmd) bind-key-exprs)))
     (setq-nreverse fns bind-key-exprs)
     `(with-eval-after-package ,pkg ,ext-p (:vars ,vars :fns ,fns)
@@ -476,10 +481,10 @@ If MAP is nil, the key binding will be made global."
 
 - ACTIVATOR is a key that will activate the transient keymap.
 
-- SPEC is a list of (KEY CMD &key PERSIST) such that each CMD will
-  be bound to its corresponding KEY.  If PERSIST is non-nil, the
-  key binding will be persistent, i.e., the transient keymap will
-  remain active after KEY has been used to invoke CMD.
+- SPEC is a list of (KEY CMD &key PERSIST) such that each CMD
+  will be bound to its corresponding KEY.  If PERSIST is non-nil,
+  the key binding will be persistent, i.e., the transient keymap
+  will remain active after KEY has been used to invoke CMD.
 
 - MAP is a keymap that will contain the key binding of ACTIVATOR.
   If it is nil, ACTIVATOR will be bound globally.
@@ -493,14 +498,15 @@ If MAP is nil, the key binding will be made global."
 \(define-transient-map (:map flymake-mode-map :pkg flymake) \"C-c !\"
   (\"n\" flymake-goto-next-error :persist t)
   (\"p\" flymake-goto-prev-error :persist t)
+  (\"s\" flymake-start)
   (\"l\" flymake-switch-to-log-buffer)
   (\"d\" flymake-show-diagnostics-buffer)
   (\"r\" flymake-running-backends)
   (\"D\" flymake-disabled-backends)
   (\"R\" flymake-reporting-backends))
-    => Once `flymake' gets loaded (e.g., by running `flymake-mode'),
-       define a transient keymap containing the specified key bindings
-       and use \"C-c !\" as the activator key."
+    => Once `flymake' has been loaded (e.g., by running `flymake-mode'),
+       define a transient keymap that contains the specified key bindings
+       and is activated by C-c !."
   (declare (indent 2))
   (let ((vars (when map (list map)))
         fns
