@@ -20,6 +20,7 @@ $ stow d125q-config
 
 - [Alacritty](.config/alacritty/alacritty.yml)
 - [fontconfig](.config/fontconfig)
+- [GNU Emacs](#gnu-emacs)
 - [`install-pkg`](#install-pkg)
 - [`latexmk`](#latexmk)
 - [PAM environment](#pam-environment)
@@ -28,6 +29,23 @@ $ stow d125q-config
 - [X resources](.Xresources)
 - [Zathura](.config/zathura/zathurarc)
 - [Zsh](#zsh)
+
+### GNU Emacs
+
+- A recent version of GNU Emacs is required – feel free to build [from
+  source][gnu-emacs-repo].  (`install-pkg` can also help.)
+- The configuration is pretty big and opinionated:
+  + Ido is used in conjunction with Amx and kept on the default key sequences.
+    It is primarily meant for operations where one already has a good overview
+    of things and can get away with using the minibuffer.
+  + For more elaborate scenarios, Helm is configured and bound to the usual
+    <kbd>C-c letter</kbd> user-reserved key sequences.
+  + Other custom key bindings use either <kbd>F5</kbd> through <kbd>F9</kbd>
+    without any modifier keys or the <kbd>Super</kbd> modifier key.
+  + Key sequences used by the window manager should not be touched by GNU Emacs
+    and vice versa.
+- Packages should only be loaded when really needed.
+- GNU Emacs should be run as a daemon using its systemd service.
 
 ### `install-pkg`
 
@@ -71,7 +89,8 @@ the entire PAM session.
 
 ### Vim
 
-- A new version of Vim is required – feel free to build [from source][vim-repo].
+- A recent version of Vim is required – feel free to build [from
+  source][vim-repo].  (`install-pkg` can also help.)
 - `.vimrc` should come from [grml-etc-core][grml-etc-core-repo].
 - Local changes go to `.vimrc.local` instead.
 - Included plugins:
@@ -80,13 +99,15 @@ the entire PAM session.
 
 ### Zsh
 
-- A new version of Zsh is required – feel free to build [from source][zsh-repo].
+- A recent version of Zsh is required – feel free to build [from
+  source][zsh-repo].  (`install-pkg` can also help.)
 - `ZDOTDIR` should be configured to point to `$HOME/.config/zsh`.
 - `.zshrc` should come from [grml-etc-core][grml-etc-core-repo].
 - Local changes to go `.zshrc.pre` and `.zshrc.local` instead.
 
 
 [git-homepage]: https://git-scm.com/ "Homepage of Git"
+[gnu-emacs-repo]: https://github.com/emacs-mirror/emacs "Git repository of GNU Emacs"
 [grml-etc-core-repo]: https://github.com/grml/grml-etc-core "Git repository of grml-etc-core"
 [gruvbox-repo]: https://github.com/briemens/gruvbox "Git repository of Gruvbox"
 [stow-homepage]: https://www.gnu.org/software/stow/ "Homepage of GNU Stow"
