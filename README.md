@@ -34,14 +34,16 @@ $ stow d125q-config
 
 - A recent version of GNU Emacs is required – feel free to build [from
   source][gnu-emacs-repo].  (`install-pkg` can also help.)
-- The configuration is pretty big and opinionated:
-  + Ido is used in conjunction with Amx and kept on the default key sequences.
-    It is primarily meant for operations where one already has a good overview
-    of things and can get away with using the minibuffer.
-  + For more elaborate scenarios, Helm is configured and bound to the usual
-    <kbd>C-c letter</kbd> user-reserved key sequences.  (Where <kbd>letter</kbd>
-    is either upper or lower case.)  For example, `helm-M-x` is bound to
-    <kbd>C-c x</kbd>, `helm-find-files` to <kbd>C-c f</kbd>, and
+- The configuration is pretty big and opinionated.  It tries to follow the
+  official [key binding conventions][kbd-convs-doc].
+  + [Ido][ido-doc] is used in conjunction with [Amx][amx-repo] and kept on the
+    default key sequences.  It is primarily meant for operations where one
+    already has a good overview of things and can get away with using the
+    minibuffer.
+  + For more elaborate scenarios, [Helm][helm-repo] is configured and bound to
+    the usual <kbd>C-c letter</kbd> user-reserved key sequences.  (Where
+    <kbd>letter</kbd> is either upper or lower case.)  For example, `helm-M-x`
+    is bound to <kbd>C-c x</kbd>, `helm-find-files` to <kbd>C-c f</kbd>, and
     `helm-buffers-list` to <kbd>C-c b</kbd>.
   + Other custom key bindings use either <kbd>F5</kbd> through <kbd>F9</kbd>
     without any modifier keys or the <kbd>Super</kbd> modifier key.
@@ -109,10 +111,14 @@ the entire PAM session.
 - Local changes to go `.zshrc.pre` and `.zshrc.local` instead.
 
 
+[amx-repo]: https://github.com/DarwinAwardWinner/amx "Git repository of Amx"
 [git-homepage]: https://git-scm.com/ "Homepage of Git"
 [gnu-emacs-repo]: https://github.com/emacs-mirror/emacs "Git repository of GNU Emacs"
 [grml-etc-core-repo]: https://github.com/grml/grml-etc-core "Git repository of grml-etc-core"
 [gruvbox-repo]: https://github.com/briemens/gruvbox "Git repository of Gruvbox"
+[helm-repo]: https://github.com/emacs-helm/helm/ "Git repository of Helm"
+[ido-doc]: https://www.gnu.org/software/emacs/manual/html_mono/ido.html "HTML documentation for Ido"
+[kbd-convs-doc]: https://www.gnu.org/software/emacs/manual/html_node/elisp/Key-Binding-Conventions.html "Key bindings conventions for GNU Emacs"
 [stow-homepage]: https://www.gnu.org/software/stow/ "Homepage of GNU Stow"
 [vim-repo]: https://github.com/vim/vim "Git repository of Vim"
 [zsh-repo]: https://github.com/zsh-users/zsh "Git repository of Zsh"
