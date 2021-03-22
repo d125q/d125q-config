@@ -50,7 +50,9 @@ $ stow d125q-config
   + Key sequences used by the window manager should not be touched by GNU Emacs
     and vice versa.
 - Packages should only be loaded when really needed.
-- GNU Emacs should be run as a daemon using its systemd service.
+- GNU Emacs should be run as a daemon using its systemd service.  There is
+  additionally a [drop-in](.config/systemd/user/emacs.service.d/override.conf)
+  to set the correct environment.
 
 ### `install-pkg`
 
