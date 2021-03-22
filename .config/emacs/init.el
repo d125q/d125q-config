@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210321T191406+0100
+;; Version: 20210322T103436+0100
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -877,7 +877,7 @@ will be used for this purpose."
 
 ;; ** Theme
 
-(set-variables (:pkg modus-themes :ext-p t)
+(customize-variables
   modus-themes-fringes 'subtle
   modus-themes-paren-match 'intense
   modus-themes-prompts 'subtle-accented
