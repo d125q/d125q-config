@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210321T170734+0100
+;; Version: 20210323T170519+0100
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -155,25 +155,30 @@ If FRAME is nil, the selected frame is used."
   `(let ,(cl-mapcar #'list syms '#1=((gensym "--") . #1#))
      ,@body))
 
-(cl-defmacro with-eval-after-package (pkg ext-p (&key vars fns) &rest body)
-  "Execute BODY after PKG is loaded.
+(cl-defmacro with-eval-after-package (pkg ext-p vars fns &rest body)
+  "Execute BODY after PKG has been loaded.
 
-BODY will be executed immediately if PKG is nil or has already
-been loaded.  If EXT-P is non-nil, PKG is assumed to be an
-external package.  VARS is a list of variables and FNS is a list
-of functions which are declared in PKG and used in BODY.  See
-also `with-eval-after-load'.
+- If PKG is nil, BODY will be executed immediately.
 
-\(with-eval-after-package
-    magit-extras t (:fns (ido-enter-magit-status))
+- If EXT-P is non-nil, PKG will be assumed to be an external
+  package.
+
+- VARS is a list of variables used within BODY and assumed to be
+  defined by PKG.
+
+- FUNS is a list of functions used within BODY and assumed to be
+  defined by PKG.
+
+See also `with-eval-after-load'.
+
+\(with-eval-after-package magit-extras t nil (ido-enter-magit-status)
   (define-key ido-common-completion-map
     (kbd \"C-x g\") \\='ido-enter-magit-status))
-    => (progn
+    => (with-eval-after-load \\='magit-extras
          (declare-function ido-enter-magit-status \"ext:magit-extras\")
-         (with-eval-after-load \\='magit-extras
-           (define-key ido-common-completion-map
-             (kbd \"C-x g\") \\='ido-enter-magit-status)))"
-  (declare (indent 3))
+         (define-key ido-common-completion-map
+           (kbd \"C-x g\") \\='ido-enter-magit-status)))"
+  (declare (indent 4))
   (let ((defvar-exprs (mapcar (lambda (var) `(defvar ,var)) vars)))
     (if-let ((file (when pkg (format (if ext-p "ext:%s" "%s") pkg))))
         `(with-eval-after-load ',pkg
@@ -264,7 +269,7 @@ also `with-eval-after-load'.
           (val (pop spec)))
       (push var vars)
       (push `(,var ,val) assgns)))
-  `(with-eval-after-package ,pkg ,ext-p (:vars ,(nreverse vars))
+  `(with-eval-after-package ,pkg ,ext-p ,(nreverse vars) nil
      (setq ,@(apply #'nconc (nreverse assgns)))))
 
 (defmacro customize-variables (&rest spec)
@@ -473,7 +478,7 @@ If MAP is nil, the key binding will be made global."
                        prepend key)))))
         (push `(bind-key ,map ,key ',cmd) bind-key-exprs)))
     (setq-nreverse fns bind-key-exprs)
-    `(with-eval-after-package ,pkg ,ext-p (:vars ,vars :fns ,fns)
+    `(with-eval-after-package ,pkg ,ext-p ,vars ,fns
        ,@(nconc init-prefix-exprs bind-key-exprs))))
 
 (cl-defmacro define-transient-map ((&key map pkg ext-p) activator &rest spec)
@@ -519,7 +524,7 @@ If MAP is nil, the key binding will be made global."
           (push `(bind-key ,temp-map ,key ',cmd) bind-key-exprs)
           (when persist (push cmd persistent-cmds))))
       (setq-nreverse fns bind-key-exprs persistent-cmds)
-      `(with-eval-after-package ,pkg ,ext-p (:vars ,vars :fns ,fns)
+      `(with-eval-after-package ,pkg ,ext-p ,vars ,fns
          (defvar ,transient-map
            (let ((,temp-map (make-sparse-keymap)))
              ,@bind-key-exprs

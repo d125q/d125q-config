@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210322T103436+0100
+;; Version: 20210323T170415+0100
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -433,7 +433,9 @@ will be used for this purpose."
 
 (autoload 'project-root "project")
 
-(with-eval-after-package project nil (:vars (project-prefix-map project-switch-commands))
+(with-eval-after-package project nil
+                         (project-prefix-map project-switch-commands)
+                         nil
   (require 'd125q-helm-project)
   (define-key-bindings (:prepend "C-c")
     ("p" helm-project-switch-project))
