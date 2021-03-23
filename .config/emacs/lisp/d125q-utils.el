@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210323T170519+0100
+;; Version: 20210323T183049+0100
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -481,24 +481,38 @@ If MAP is nil, the key binding will be made global."
     `(with-eval-after-package ,pkg ,ext-p ,vars ,fns
        ,@(nconc init-prefix-exprs bind-key-exprs))))
 
-(cl-defmacro define-transient-map ((&key map pkg ext-p) activator &rest spec)
-  "Define a transient keymap with ACTIVATOR and SPEC.
+(defun deactivate-transient-map ()
+  "Do nothing but deactivate the current transient map."
+  (interactive))
 
-- ACTIVATOR is a key that will activate the transient keymap.
+(when (require 'multiple-cursors-core nil t)
+  (defvar mc/cmds-to-run-once)
+  (cl-pushnew 'deactivate-transient-map mc/cmds-to-run-once))
 
-- SPEC is a list of (KEY CMD &key PERSIST) such that each CMD
+(cl-defmacro define-transient-map ((&key map
+                                         pkg ext-p
+                                         exit-key
+                                         persist-by-default)
+                                   activation-key &rest spec)
+  "Define a transient keymap with ACTIVATION-KEY and SPEC.
+
+- ACTIVATION-KEY will activate the transient keymap.  If MAP is
+  non-nil, the binding of ACTIVATION-KEY will be placed in MAP.
+  Otherwise, it will be made global.
+
+- SPEC is a list of (KEY CMD &key PERSIST), such that each CMD
   will be bound to its corresponding KEY.  If PERSIST is non-nil,
-  the key binding will be persistent, i.e., the transient keymap
-  will remain active after KEY has been used to invoke CMD.
+  the binding will be persistent.  Otherwise, the persistence of
+  the binding will be determined by PERSIST-BY-DEFAULT.
 
-- MAP is a keymap that will contain the key binding of ACTIVATOR.
-  If it is nil, ACTIVATOR will be bound globally.
+- If EXIT-KEY is non-nil, it will exit the transient keymap.
 
-- PKG is a symbol that is assumed to define each CMD, and the
-  transient keymap will be defined only after it has been loaded.
-  If it is nil, the transient keymap will be defined immediately.
+- If PKG is non-nil, it will be assumed to define each CMD and
+  its loading will cause the transient keymap to be defined.
+  Otherwise, the transient keymap will be defined immediately.
 
-- If EXT-P is non-nil, PKG is assumed to be an external package.
+- If EXT-P is non-nil, PKG will be assumed to be an external
+  package.
 
 \(define-transient-map (:map flymake-mode-map :pkg flymake) \"C-c !\"
   (\"n\" flymake-goto-next-error :persist t)
@@ -513,28 +527,41 @@ If MAP is nil, the key binding will be made global."
        define a transient keymap that contains the specified key bindings
        and is activated by C-c !."
   (declare (indent 2))
-  (let ((vars (when map (list map)))
-        fns
-        bind-key-exprs
+  (with-gensyms (temp-map
+                 transient-map
+                 keep-pred
+                 activation-cmd)
+    (let ((vars (when map
+                  (list map)))
+          cmds
+          (bind-key-exprs (when exit-key
+                            (list `(bind-key ,temp-map ,exit-key
+                                             'deactivate-transient-map))))
         persistent-cmds)
-    (with-gensyms (temp-map transient-map keep-p activate)
       (while spec
-        (cl-destructuring-bind (key cmd &key persist) (pop spec)
-          (push cmd fns)
+        (cl-destructuring-bind
+            (key cmd &key (persist nil persist-supplied-p))
+            (pop spec)
+          (push cmd cmds)
           (push `(bind-key ,temp-map ,key ',cmd) bind-key-exprs)
-          (when persist (push cmd persistent-cmds))))
-      (setq-nreverse fns bind-key-exprs persistent-cmds)
-      `(with-eval-after-package ,pkg ,ext-p ,vars ,fns
+          (when (or (and persist-supplied-p persist)
+                    (and (not persist-supplied-p) persist-by-default))
+            (push cmd persistent-cmds))))
+      (setq-nreverse cmds
+                     bind-key-exprs
+                     persistent-cmds)
+      `(with-eval-after-package ,pkg ,ext-p ,vars ,cmds
          (defvar ,transient-map
            (let ((,temp-map (make-sparse-keymap)))
              ,@bind-key-exprs
              ,temp-map))
-         (defun ,keep-p ()
-           (member this-command ',persistent-cmds))
-         (defun ,activate ()
+         (defun ,keep-pred ()
+           (and (not (eq this-command 'deactivate-transient-map))
+                (memq this-command ',persistent-cmds)))
+         (defun ,activation-cmd ()
            (interactive)
-           (set-transient-map ,transient-map ',keep-p))
-         (bind-key ,map ,activator ',activate)))))
+           (set-transient-map ,transient-map ',keep-pred))
+         (bind-key ,map ,activation-key ',activation-cmd)))))
 
 ;; * Postamble
 
