@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210324T082826+0100
+;; Version: 20210324T082933+0100
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -337,7 +337,7 @@ will be used for this purpose."
 (customize-variables
   iedit-toggle-key-default (kbd "s-;"))
 
-; (require 'iedit)
+(require 'iedit)
 
 ;; ** Imenu
 
