@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210323T170415+0100
+;; Version: 20210324T082826+0100
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -337,7 +337,7 @@ will be used for this purpose."
 (customize-variables
   iedit-toggle-key-default (kbd "s-;"))
 
-(require 'iedit)
+; (require 'iedit)
 
 ;; ** Imenu
 
@@ -352,6 +352,16 @@ will be used for this purpose."
 
 (define-key-bindings ()
   ("s-=" er/expand-region))
+
+;; ** `multiple-cursors'
+
+(with-eval-after-package
+    multiple-cursors-core t (mc/cmds-to-run-once) nil
+  (cl-pushnew 'deactivate-transient-map mc/cmds-to-run-once))
+
+(define-transient-map (:exit-key "g" :persist-by-default t) "s-."
+  ("n" mc/mark-next-like-this)
+  ("p" mc/mark-prev-like-this))
 
 ;; * Ibuffer
 
@@ -433,9 +443,8 @@ will be used for this purpose."
 
 (autoload 'project-root "project")
 
-(with-eval-after-package project nil
-                         (project-prefix-map project-switch-commands)
-                         nil
+(with-eval-after-package
+    project nil (project-prefix-map project-switch-commands) nil
   (require 'd125q-helm-project)
   (define-key-bindings (:prepend "C-c")
     ("p" helm-project-switch-project))

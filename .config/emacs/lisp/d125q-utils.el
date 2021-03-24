@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210323T183049+0100
+;; Version: 20210324T082228+0100
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -484,10 +484,6 @@ If MAP is nil, the key binding will be made global."
 (defun deactivate-transient-map ()
   "Do nothing but deactivate the current transient map."
   (interactive))
-
-(when (require 'multiple-cursors-core nil t)
-  (defvar mc/cmds-to-run-once)
-  (cl-pushnew 'deactivate-transient-map mc/cmds-to-run-once))
 
 (cl-defmacro define-transient-map ((&key map
                                          pkg ext-p
