@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210325T120821+0100
+;; Version: 20210325T172227+0100
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -139,7 +139,6 @@ will be used for this purpose."
   ("f" helm-find-files)
   ("F" helm-recentf)
   ("y" helm-show-kill-ring)
-  ("g" helm-all-mark-rings)
   ("b" helm-buffers-list)
   ("B" helm-filtered-bookmarks)
   ("i" helm-imenu)
@@ -150,6 +149,7 @@ will be used for this purpose."
   ("M" helm-multi-files))
 
 (define-key-bindings ()
+  ("s-SPC" helm-all-mark-rings)
   ("s-:" helm-eval-expression-with-eldoc)
   ("s-/" helm-dabbrev))
 
@@ -269,7 +269,7 @@ will be used for this purpose."
 (define-key-bindings (:prefix "s-h")
   ("c" helpful-callable)
   ("f" helpful-function)
-  ("h" helpful-at-point)
+  ("p" helpful-at-point)
   ("i" helpful-command)
   ("k" helpful-key)
   ("m" helpful-macro)
