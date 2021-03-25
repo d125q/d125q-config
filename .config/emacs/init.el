@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210324T082933+0100
+;; Version: 20210325T120821+0100
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -139,7 +139,7 @@ will be used for this purpose."
   ("f" helm-find-files)
   ("F" helm-recentf)
   ("y" helm-show-kill-ring)
-  ("SPC" helm-all-mark-rings)
+  ("g" helm-all-mark-rings)
   ("b" helm-buffers-list)
   ("B" helm-filtered-bookmarks)
   ("i" helm-imenu)
@@ -359,9 +359,10 @@ will be used for this purpose."
     multiple-cursors-core t (mc/cmds-to-run-once) nil
   (cl-pushnew 'deactivate-transient-map mc/cmds-to-run-once))
 
-(define-transient-map (:exit-key "g" :persist-by-default t) "s-."
-  ("n" mc/mark-next-like-this)
-  ("p" mc/mark-prev-like-this))
+(mapc (lambda (fn)
+        (autoload fn "mc-mark-more"))
+      '(mc/mark-next-like-this-symbol
+        mc/mark-previous-like-this-symbol))
 
 ;; * Ibuffer
 
@@ -397,7 +398,7 @@ will be used for this purpose."
   speedbar-vebosity-level 0)
 
 (define-key-bindings ()
-  ("<f5>" speedbar))
+  ("<f9>" speedbar))
 
 ;; * The Customization interface
 
