@@ -35,6 +35,7 @@ typeset -a pkgnames=(
     girara
     git
     grml-etc-core
+    liberation-fonts
     libertinus
     libgit2
     libsynctex
@@ -525,6 +526,33 @@ function install-grml-etc-core {
 
 function stow-grml-etc-core {
     stow -d $cfgdir -R $pkgname
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** liberation-fonts
+
+function clone-liberation-fonts {
+    git clone -b 2.1.3 --depth 1 'git@github.com:liberationfonts/liberation-fonts.git'
+}
+
+function update-liberation-fonts {
+    echo 'liberation-fonts is detached at 2.1.3 and cannot be updated'
+}
+
+function build-liberation-fonts {
+    source ${WORKON_HOME:-$HOME/.virtualenvs}/liberation-fonts/bin/activate
+    pip install -U fonttools
+    make
+    deactivate
+}
+
+function install-liberation-fonts {
+    local -r srcdir=liberation-fonts-ttf-2.1.3
+    local -r tgtdir=$pkgprefix/share/fonts/Liberation
+    install -m 644 -D -t $tgtdir $srcdir/*.ttf
+}
+
+function stow-liberation-fonts {
     stow -d $pkgdir -R $pkgname
 }
 
