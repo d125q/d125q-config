@@ -421,12 +421,11 @@ function stow-fontforge {
 ## ** fontship
 
 function clone-fontship {
-    git clone -b master --depth 1 'git@github.com:theleagueof/fontship.git'
+    git clone 'git@github.com:theleagueof/fontship.git'
 }
 
 function update-fontship {
-    git fetch --depth=1 --update-shallow origin
-    git reset --hard origin/master
+    git pull --ff-only
 }
 
 function build-fontship {
