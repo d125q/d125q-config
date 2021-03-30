@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210324T082228+0100
+;; Version: 20210330T155837+0200
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -141,15 +141,10 @@ If FRAME is nil, the selected frame is used."
   "Bind SYMS to fresh gensyms and evaluate BODY.
 
 \(with-gensyms (funname)
-  \\=`(progn
-     (defun ,funname (arg)
-       (message \"Hello, %s\" arg))
-     (,funname \"World\")))
-    => (let ((funname (gensym \"--\")))
-         \\=`(progn
-            (defun ,funname (arg)
-              (message \"Hello, %s\" arg))
-            (,funname \"World\")))"
+  (fset funname (lambda (arg)
+                  (format \"Hello, %s!\" arg)))
+  (funcall funname \"World\"))
+    => \"Hello, World!\""
   (declare (indent 1))
   (cl-assert (cl-every #'symbolp syms))
   `(let ,(cl-mapcar #'list syms '#1=((gensym "--") . #1#))
@@ -489,8 +484,8 @@ If MAP is nil, the key binding will be made global."
                                          pkg ext-p
                                          exit-key
                                          persist-by-default)
-                                   activation-key &rest spec)
-  "Define a transient keymap with ACTIVATION-KEY and SPEC.
+                                   name activation-key &rest spec)
+  "Define a transient keymap with NAME, ACTIVATION-KEY, and SPEC.
 
 - ACTIVATION-KEY will activate the transient keymap.  If MAP is
   non-nil, the binding of ACTIVATION-KEY will be placed in MAP.
@@ -523,11 +518,11 @@ If MAP is nil, the key binding will be made global."
        define a transient keymap that contains the specified key bindings
        and is activated by C-c !."
   (declare (indent 2))
-  (with-gensyms (temp-map
-                 transient-map
-                 keep-pred
-                 activation-cmd)
-    (let ((vars (when map
+  (with-gensyms (temp-map)
+    (let ((transient-map (intern (format "%s-transient-map" name)))
+          (keep-pred (intern (format "%s-keep-pred" name)))
+          (activation-cmd (intern (format "activate-%s-transient-map" name)))
+          (vars (when map
                   (list map)))
           cmds
           (bind-key-exprs (when exit-key

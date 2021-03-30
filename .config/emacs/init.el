@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210330T112825+0200
+;; Version: 20210330T155444+0200
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -355,16 +355,13 @@ will be used for this purpose."
 
 ;; ** `multiple-cursors'
 
-(with-eval-after-package
-    multiple-cursors-core t (mc/cmds-to-run-once) nil
-  (cl-pushnew 'deactivate-transient-map mc/cmds-to-run-once))
-
 (mapc (lambda (fn)
         (autoload fn "mc-mark-more"))
       '(mc/mark-next-like-this-symbol
         mc/mark-previous-like-this-symbol))
 
-(define-transient-map (:exit-key "M" :persist-by-default t) "s-M"
+(define-transient-map
+    (:exit-key "M" :persist-by-default t) "multiple-cursors" "s-M"
   ("l" mc/mark-next-like-this)
   ("h" mc/mark-previous-like-this)
   ("w" mc/mark-next-word-like-this)
@@ -379,6 +376,11 @@ will be used for this purpose."
   ("k" mc/unmark-previous-like-this)
   ("J" mc/skip-to-next-like-this)
   ("K" mc/skip-to-previous-like-this))
+
+(with-eval-after-package
+    multiple-cursors-core t (mc/cmds-to-run-once) nil
+  (cl-pushnew 'activate-multiple-cursors-transient-map mc/cmds-to-run-once)
+  (cl-pushnew 'deactivate-transient-map mc/cmds-to-run-once))
 
 (define-key-bindings ()
   ("s-a" mc/mark-all-like-this)
@@ -555,7 +557,8 @@ will be used for this purpose."
   company-tooltip-flip-when-above t
   global-company-mode t)
 
-(define-transient-map (:map flymake-mode-map :pkg flymake) "C-c !"
+(define-transient-map
+    (:map flymake-mode-map :pkg flymake) "flymake" "C-c !"
   ("n" flymake-goto-next-error :persist t)
   ("p" flymake-goto-prev-error :persist t)
   ("s" flymake-start)
@@ -564,6 +567,10 @@ will be used for this purpose."
   ("r" flymake-running-backends)
   ("D" flymake-disabled-backends)
   ("R" flymake-reporting-backends))
+
+(with-eval-after-package
+    multiple-cursors-core t (mc/cmds-to-run-once) nil
+  (cl-pushnew 'activate-flymake-transient-map mc/cmds-to-run-once))
 
 ;; ** Emacs Lisp
 
