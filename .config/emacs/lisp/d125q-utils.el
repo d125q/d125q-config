@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210330T155837+0200
+;; Version: 20210330T160005+0200
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -86,8 +86,8 @@
   "Decrypt the contents of FILE.
 
 \(defvar secrets (read
-		 (decrypt-file
-		  (locate-user-emacs-file \"secrets.gpg\")))
+                 (decrypt-file
+                  (locate-user-emacs-file \"secrets.gpg\")))
     => The GPG-encrypted file will be decrypted, read as a Lisp
        expression and stored in the `secrets' variable."
   (setq file (expand-file-name file))
