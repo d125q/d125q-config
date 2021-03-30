@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210330T160005+0200
+;; Version: 20210330T160158+0200
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -88,8 +88,8 @@
 \(defvar secrets (read
                  (decrypt-file
                   (locate-user-emacs-file \"secrets.gpg\")))
-    => The GPG-encrypted file will be decrypted, read as a Lisp
-       expression and stored in the `secrets' variable."
+    => The GPG-encrypted file will be decrypted and read as a
+       Lisp expression whose value will be stored in `secrets'."
   (setq file (expand-file-name file))
   (let ((context (epg-make-context epa-protocol)))
     (epg-context-set-passphrase-callback
