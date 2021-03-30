@@ -165,9 +165,9 @@ EOF
 }
 
 function install-Iosevka {
+    local -r srcdir=dist/iosevka-custom/ttf
     local -r tgtdir=$pkgprefix/share/fonts/Iosevka
-    mkdir -p $( dirname $tgtdir )
-    rsync -avu ./dist/iosevka-custom/ttf/*.ttf $tgtdir
+    install -m 644 -D -t $tgtdir $srcdir/*.ttf
 }
 
 function stow-Iosevka {
@@ -575,8 +575,7 @@ function build-libertinus {
 
 function install-libertinus {
     local -r tgtdir=$pkgprefix/share/fonts/Libertinus
-    mkdir -p $( dirname $tgtdir )
-    rsync -avu ./*.otf $tgtdir
+    install -m 644 -D -t $tgtdir *.otf
 }
 
 function stow-libertinus {
@@ -644,12 +643,16 @@ function stow-mongo-c-driver {
 ## ** libsynctex
 
 function clone-libsynctex {
-    rsync -avu --delete --exclude .svn/ --exclude work/ \
+    rsync -avu --delete                                 \
+          --exclude '.svn/'                             \
+          --exclude 'work/'                             \
           tug.org::tldevsrc/Build/source/ libsynctex
 }
 
 function update-libsynctex {
-    rsync -avu --delete --exclude .svn/ --exclude work/ \
+    rsync -avu --delete                         \
+          --exclude '.svn/'                     \
+          --exclude 'work/'                     \
           tug.org::tldevsrc/Build/source/ .
 }
 
@@ -733,7 +736,10 @@ function update-noto-cjk {
 function install-noto-cjk {
     local -r tgtdir=$pkgprefix/share/fonts/NotoCJK
     mkdir -p $( dirname $tgtdir )
-    rsync -avu --delete --include='*.otf' --exclude='*' ./ $tgtdir
+    rsync -avu --delete --delete-excluded       \
+          --include='*.otf'                     \
+          --exclude='*'                         \
+          ./ $tgtdir
 }
 
 function stow-noto-cjk {
@@ -776,7 +782,11 @@ function update-noto-fonts {
 function install-noto-fonts {
     local -r tgtdir=$pkgprefix/share/fonts/Noto
     mkdir -p $( dirname $tgtdir )
-    rsync -avu ./hinted/ttf/ $tgtdir
+    rsync -avu --delete --delete-excluded       \
+          --include='/**/'                      \
+          --include='/**/*.ttf'                 \
+          --exclude='*'                         \
+          ./hinted/ttf/ $tgtdir
 }
 
 function stow-noto-fonts {
@@ -869,7 +879,22 @@ function update-pyenv {
 
 function install-pyenv {
     mkdir -p $cfgprefix/.pyenv
-    rsync -avu --exclude .git/ ./ $cfgprefix/.pyenv
+    rsync -avu --delete                         \
+          --exclude='/.git'                     \
+          --exclude='/.github'                  \
+          --exclude='/shims'                    \
+          --exclude='/version'                  \
+          --exclude='/versions'                 \
+          --exclude='/sources'                  \
+          --exclude='/cache'                    \
+          --exclude='/libexec/*.dylib'          \
+          --exclude='/src/Makefile'             \
+          --exclude='/src/*.o'                  \
+          --exclude='/bats'                     \
+          --exclude='/default-packages'         \
+          --include='/plugins/python-build'     \
+          --exclude='/plugins/*'                \
+          ./ $cfgprefix/.pyenv
 }
 
 function stow-pyenv {
@@ -897,7 +922,25 @@ function update-rbenv {
 
 function install-rbenv {
     mkdir -p $cfgprefix/.rbenv
-    rsync -avu --exclude .git/ ./ $cfgprefix/.rbenv
+    rsync -avu --delete                                 \
+          --exclude='/.git'                             \
+          --exclude='/.github'                          \
+          --exclude='/shims'                            \
+          --exclude='/version'                          \
+          --exclude='/versions'                         \
+          --exclude='/sources'                          \
+          --exclude='/cache'                            \
+          --exclude='/libexec/*.dylib'                  \
+          --exclude='/src/Makefile'                     \
+          --exclude='/src/*.o'                          \
+          --exclude='/gems'                             \
+          --exclude='/default-packages'                 \
+          --exclude='/plugins/ruby-build/.git'          \
+          --exclude='/plugins/ruby-build/.github'       \
+          --exclude='/plugins/ruby-build/bats'          \
+          --include='/plugins/ruby-build'               \
+          --exclude='/plugins/*'                        \
+          ./ $cfgprefix/.rbenv
 }
 
 function stow-rbenv {
