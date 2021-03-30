@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210325T172227+0100
+;; Version: 20210330T112825+0200
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -311,7 +311,7 @@ will be used for this purpose."
   ("z" zrgrep))
 
 (customize-variables
-  rg-keymap-prefix (kbd "s-s")
+  rg-keymap-prefix (kbd "s-g")
   rg-use-transient-menu t)
 
 (rg-enable-default-bindings)
@@ -363,6 +363,32 @@ will be used for this purpose."
         (autoload fn "mc-mark-more"))
       '(mc/mark-next-like-this-symbol
         mc/mark-previous-like-this-symbol))
+
+(define-transient-map (:exit-key "M" :persist-by-default t) "s-M"
+  ("l" mc/mark-next-like-this)
+  ("h" mc/mark-previous-like-this)
+  ("w" mc/mark-next-word-like-this)
+  ("b" mc/mark-previous-word-like-this)
+  ("W" mc/mark-next-symbol-like-this)
+  ("B" mc/mark-previous-symbol-like-this)
+  ("SPC w" mc/mark-next-like-this-word)
+  ("SPC b" mc/mark-previous-like-this-word)
+  ("SPC B" mc/mark-previous-like-this-symbol)
+  ("SPC W" mc/mark-next-like-this-symbol)
+  ("j" mc/unmark-next-like-this)
+  ("k" mc/unmark-previous-like-this)
+  ("J" mc/skip-to-next-like-this)
+  ("K" mc/skip-to-previous-like-this))
+
+(define-key-bindings ()
+  ("s-a" mc/mark-all-like-this)
+  ("s-A w" mc/mark-all-words-like-this)
+  ("s-A W" mc/mark-all-symbols-like-this)
+  ("s-s" mc/mark-all-in-region)
+  ("s-S" mc/mark-all-in-region-regexp)
+  ("s-d" mc/mark-all-like-this-in-defun)
+  ("s-D w" mc/mark-all-words-like-this-in-defun)
+  ("s-D W" mc/mark-all-symbols-like-this-in-defun))
 
 ;; * Ibuffer
 
