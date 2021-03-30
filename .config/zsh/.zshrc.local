@@ -33,18 +33,21 @@ source ${ZDOTDIR:-$HOME}/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 if [[ -v FZF_HOME ]] ; then
     source $FZF_HOME/shell/completion.zsh
     source $FZF_HOME/shell/key-bindings.zsh
+    ## Rebind fzf-history-widget
     bindkey '^R' history-incremental-pattern-search-backward
-    bindkey '^T' transpose-chars
-    bindkey '\ec' capitalize-word
     bindkey '^X[' fzf-history-widget
+    # Rebind fzf-file-widget
+    bindkey '^T' transpose-chars
     bindkey '^X]' fzf-file-widget
+    # Rebind fzf-cd-widget
+    bindkey '\ec' capitalize-word
     bindkey '^X\' fzf-cd-widget
 fi
 
 ## * Completions for pip and pipenv
 if [[ -v commands[pyenv] ]] ; then
-    pyenv which pip &> /dev/null && eval "$( pip completion --zsh )"
-    pyenv which pipenv &> /dev/null && eval "$( pipenv --completion )"
+    eval "$( pyenv exec pip completion --zsh )"
+    eval "$( pyenv exec pipenv --completion )"
 fi
 
 ## * Initialization of zoxide
@@ -55,15 +58,15 @@ eval "$( zoxide init zsh )"
 
 ## ** exa -- a modern version of ls
 if [[ -v commands[exa] ]] ; then
-    alias e='command exa'
-    alias el='command exa -l'
-    alias ea='command exa -la'
-    alias eh='command exa -lah'
+    alias e="${commands[exa]}"
+    alias el="${commands[exa]} -l"
+    alias ea="${commands[exa]} -la"
+    alias eh="${commands[exa]} -lah"
 fi
 
 ## ** sudo
 if [[ -v commands[sudo] && -v commands[zpass] ]] ; then
-    alias sudo='SUDO_ASKPASS=${commands[zpass]} command sudo -A'
+    alias sudo="SUDO_ASKPASS=${commands[zpass]} ${commands[sudo]} -A"
 fi
 
 ## ** Download albums from Bandcamp using youtube-dl
