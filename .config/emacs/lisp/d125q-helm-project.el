@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210319T103834+0100
+;; Version: 20210330T133528+0200
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -17,6 +17,7 @@
 
 ;; * Preamble
 
+(require 'cl-lib)
 (require 'helm)
 (require 'helm-files)
 (require 'project)
@@ -31,18 +32,26 @@
     :initform (lambda ()
                 (if-let* ((project (project-current))
                           (project-root (project-root project)))
-                    (progn
-                      (helm-set-attr 'candidates (project-files project))
+                    (let* ((real (project-files project))
+                           (cpd (file-name-directory
+                                 (try-completion "" real)))
+                           (cpd-len (length cpd))
+                           (display (mapcar
+                                     (lambda (r) (substring r cpd-len))
+                                     real)))
+                      (helm-set-attr 'candidates
+                                     (cl-mapcar #'cons display real))
                       (helm-set-attr 'header-line
                                      (format "%s | %s"
                                              project-root
                                              (helm-get-attr 'persistent-help)))
                       (setq helm-ff-default-directory project-root))
                   (user-error "Could not retrieve current project"))))
-   (persistent-action-if
-    :initform #'helm-find-files-persistent-action-if)
+   (persistent-action
+    :initform (lambda (candidate)
+                (funcall helm-ff-kill-or-find-buffer-fname-fn candidate)))
    (persistent-help
-    :initform "Hit1 to expand candidate, Hit2 (or C-u) to find file")
+    :initform "View candidate or kill its buffer")
    (help-message
     :initform helm-ff-help-message)
    (action
