@@ -1,6 +1,6 @@
-Emacs.font: Iosevka Custom-13
-Emacs.paneFont: -*-terminus-*-r-*-*-13-*-*-*-*-*-*-*
-Emacs.selectionFont: -*-terminus-*-r-*-*-11-*-*-*-*-*-*-*
+Emacs.font: Iosevka Custom-15
+Emacs.paneFont: -*-terminus-*-r-*-*-15-*-*-*-*-*-*-*
+Emacs.selectionFont: -*-terminus-*-r-*-*-13-*-*-*-*-*-*-*
 
 Emacs.backgroundMode: dark
 Emacs.background: black
