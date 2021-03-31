@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210330T155444+0200
+;; Version: 20210331T105143+0200
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -21,15 +21,6 @@
 
 (define-controls show-trailing-whitespace)
 (define-controls indent-tabs-mode)
-
-;; * Magit
-
-(customize-variables
-  magit-define-global-key-bindings t
-  magit-completing-read-function 'magit-ido-completing-read)
-
-(require 'magit)
-(require 'magit-extras)
 
 ;; * Minibuffer
 
@@ -83,13 +74,22 @@
   ido-record-commands t
   ido-cr+-auto-update-blacklist t)
 
-;; `magit-extras' has already been loaded
-(define-key-bindings (:map ido-common-completion-map :pkg ido)
-  ("C-x g" ido-enter-magit-status :nodecl t))
-
 (autoload 'ido-everywhere "ido")
 (ido-everywhere)
 (amx-mode)
+
+;; * Magit
+
+(customize-variables
+  magit-define-global-key-bindings t
+  magit-completing-read-function 'magit-ido-completing-read)
+
+(require 'magit)
+(require 'magit-extras)
+
+;; Ido has already been loaded
+(define-key-bindings (:map ido-common-completion-map)
+  ("C-x g" ido-enter-magit-status :nodecl t))
 
 ;; * Helm
 
@@ -106,6 +106,7 @@
 
 (require 'helm-config)
 (require 'helm-files)
+(require 'd125q-helm-project)
 
 (defun helm-ff-magit-status (candidate)
   "Open the Magit status from Helm FF with an action.
@@ -146,7 +147,8 @@ will be used for this purpose."
   ("s" helm-semantic)
   ("r" helm-register)
   ("m" helm-mini)
-  ("M" helm-multi-files))
+  ("M" helm-multi-files)
+  ("p" helm-project-switch-project))
 
 (define-key-bindings ()
   ("s-SPC" helm-all-mark-rings)
@@ -168,6 +170,28 @@ will be used for this purpose."
   ("l" helm-locate)
   ("o" helm-occur)
   ("r" helm-regexp))
+
+;; * Project
+
+(define-key-bindings (:map project-prefix-map)
+  ("<f5>" helm-project-find-files)
+  ("<f6>" helm-project-list-buffers)
+  ("<f7>" helm-project-grep)
+  ("<f8>" rg-project)
+  ("<f9>" deadgrep))
+
+(customize-variables
+  project-switch-commands '((project-find-file "Find file")
+                            (project-find-regexp "Find regexp")
+                            (project-dired "Dired")
+                            (project-vc-dir "VC-Dir")
+                            (magit-project-status "Magit")
+                            (project-eshell "Eshell")
+                            (helm-project-find-files "Find files (Helm)")
+                            (helm-project-list-buffers "List buffers (Helm)")
+                            (helm-project-grep "grep (Helm)")
+                            (rg-project "ripgrep")
+                            (deadgrep "deadgrep")))
 
 ;; * Files
 
@@ -246,7 +270,7 @@ will be used for this purpose."
   ("s-r" recentf-open-files)
   ("s-R" recentf-find-file))
 
-;; * `server.el'
+;; * Server
 
 ;; for some reason GNOME ignores the `raise-frame' in
 ;; `server-switch-buffer' and instead only displays a "GNU Emacs is
@@ -467,25 +491,6 @@ will be used for this purpose."
 (define-key-bindings (:map comint-mode-map :pkg comint)
   ([remap kill-whole-line] comint-kill-whole-line)
   ([remap kill-region] comint-kill-region))
-
-;; * `project.el'
-
-(autoload 'project-root "project")
-
-(with-eval-after-package
-    project nil (project-prefix-map project-switch-commands) nil
-  (require 'd125q-helm-project)
-  (define-key-bindings (:prepend "C-c")
-    ("p" helm-project-switch-project))
-  (define-key-bindings (:map project-prefix-map)
-    ("F" helm-project-find-files)
-    ("B" helm-project-list-buffers)
-    ("G" helm-project-grep))
-  (setq project-switch-commands
-        (append project-switch-commands
-                '((helm-project-find-files "Find files (Helm)")
-                  (helm-project-list-buffers "List buffers (Helm)")
-                  (helm-project-grep "grep (Helm)")))))
 
 ;; * Mail and News
 
