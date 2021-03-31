@@ -878,10 +878,12 @@ function update-pyenv {
 }
 
 function install-pyenv {
+    install -m 644 -D -t $pkgman1dir pyenv.1
     mkdir -p $cfgprefix/.pyenv
     rsync -avu --delete                         \
           --exclude='/.git'                     \
           --exclude='/.github'                  \
+          --exclude='/pyenv.1'                  \
           --exclude='/shims'                    \
           --exclude='/version'                  \
           --exclude='/versions'                 \
@@ -898,6 +900,7 @@ function install-pyenv {
 }
 
 function stow-pyenv {
+    stow -d $pkgdir -R $pkgname
     stow -d $cfgdir -R $pkgname
 }
 
