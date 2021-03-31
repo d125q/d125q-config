@@ -32,8 +32,8 @@ function setup_go {
         return 1
     }
     if [[ -v commands[fd] ]] ; then
-        typeset -gx FZF_DEFAULT_COMMAND='command fd -tf'                   \
-                    FZF_ALT_C_COMMAND='command fd --min-depth 1 -L -H -td'
+        typeset -gx FZF_CTRL_T_COMMAND="${commands[fd]} -L --min-depth 1 -H -tf -tl -td"        \
+                    FZF_ALT_C_COMMAND="${commands[fd]} -L --min-depth 1 -H -td"
     fi
 }
 
