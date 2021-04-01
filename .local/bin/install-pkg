@@ -6,19 +6,21 @@ read -r -d '' usage <<EOF
 Usage: $( basename $0 ) [OPTION]... PATTERN...
 Install packages whose names match PATTERN from their local repositories.
 Options:
-    -noupdate      do not update from the remote repositories
-    -nobuild       do not build the packages
-    -nostow        do not stow the packages or their configuration files
-    -pkgdir DIR    directory where packages will be installed
-                       (default: \$HOME/.local/stow)
-    -cfgdir DIR    directory where configuration files will be installed
-                       (default: \$HOME/stow)
-    -srcdir DIR    directory containing the local repositories
-                       (default: \$HOME/.local/src)
-    -altdir DIR    directory containing the alternatives
-                       (default: \$HOME/Alternatives)
-    -admindir DIR  directory containing the administrative information
-                       (default: \$HOME/.var/lib/dpkg)
+    -h, -help          display this help and exit
+    -j N, -parallel N  use up to N concurrent jobs when building packages
+    -noupdate          do not update from the remote repositories
+    -nobuild           do not build the packages
+    -nostow            do not stow the packages or their configuration files
+    -pkgdir DIR        directory where packages will be installed
+                           (default: \$HOME/.local/stow)
+    -cfgdir DIR        directory where configuration files will be installed
+                           (default: \$HOME/stow)
+    -srcdir DIR        directory containing the local repositories
+                           (default: \$HOME/.local/src)
+    -altdir DIR        directory containing the alternatives
+                           (default: \$HOME/Alternatives)
+    -admindir DIR      directory containing the administrative information
+                           (default: \$HOME/.var/lib/dpkg)
 EOF
 set -euo pipefail
 typeset -a pkgnames=(
@@ -60,6 +62,7 @@ typeset -A opts
 zparseopts -D -E -F -A opts -M -                        \
            h help=h                                     \
            noupdate nobuild nostow                      \
+           j: parallel:=j                               \
            pkgdir: cfgdir: srcdir: altdir: admindir:
 
 if [[ -v opts[-h] ]] ; then
@@ -85,6 +88,14 @@ man1dir=$mandir/man1
 infodir=$datadir/info
 applicationsdir=$datadir/applications
 iconsdir=$datadir/icons/hicolor
+
+function makej {
+    if [[ -v opts[-j] ]] ; then
+        make -j${opts[-j]} $@
+    else
+        make $@
+    fi
+}
 
 ## * Functions to update, build, install, and stow packages
 
@@ -177,7 +188,7 @@ function stow-Iosevka {
 ## ** R
 
 function clone-R {
-    svn checkout 'https://svn.r-project.org/R/tags/R-4-0-4/' R
+    svn checkout 'https://svn.r-project.org/R/tags/R-4-0-5/' R
 }
 
 function update-R {
@@ -186,16 +197,13 @@ function update-R {
 
 function build-R {
     ./tools/rsync-recommended
-    ./configure --prefix=$pkgprefix
-    make
-    make info
-    make pdf
+    env CC='gcc-10' CXX='g++-10' FC='gfortran-10' \
+        ./configure --prefix=$pkgprefix
+    makej all info pdf
 }
 
 function install-R {
-    make install
-    make install-info
-    make install-pdf
+    make install install-info install-pdf
     rm $pkginfodir/dir
 }
 
@@ -265,7 +273,7 @@ function build-check {
         autoreconf --install
     fi
     ./configure --prefix=$pkgprefix
-    make
+    makej all
 }
 
 function install-check {
@@ -328,7 +336,7 @@ function build-ctags {
         ./autogen.sh
     fi
     ./configure --prefix=$pkgprefix
-    make
+    makej all
 }
 
 function install-ctags {
@@ -365,7 +373,9 @@ function build-emacs {
                     --without-gsettings         \
                     --without-gconf             \
                     --with-native-compilation
-    make bootstrap
+    makej bootstrap
+    # running make docs with -j is buggy and prone to deadlocks
+    # TODO: report to mailing list
     make docs
 }
 
@@ -441,7 +451,7 @@ function build-fontship {
         ./bootstrap.sh
     fi
     ./configure --prefix=$pkgprefix
-    make
+    makej all
     deactivate
 }
 
@@ -494,7 +504,7 @@ function build-git {
         make configure
     fi
     ./configure --prefix=$pkgprefix
-    make all doc
+    makej all doc
 }
 
 function install-git {
@@ -518,7 +528,7 @@ function update-grml-etc-core {
 
 function build-grml-etc-core {
     cd doc
-    make
+    make all
     cd -
 }
 
@@ -686,7 +696,7 @@ function build-libsynctex {
       --with-system-zlib                        \
       --with-system-ptexenc                     \
       --with-system-kpathsea
-    make
+    makej all
     cd -
 }
 
@@ -716,7 +726,7 @@ function update-ncurses {
 
 function build-ncurses {
     ./configure --prefix=$pkgprefix
-    make
+    makej all
 }
 
 function install-ncurses {
@@ -856,10 +866,10 @@ function update-premake5 {
 
 function build-premake5 {
     if [[ -v commands[premake5] ]] ; then
-        premake5 gmake
-        make
+        ${commands[premake5]} gmake
+        makej
     else
-        make -f Bootstrap.mak linux
+        makej -f Bootstrap.mak linux
     fi
 }
 
@@ -995,7 +1005,7 @@ function build-tmux {
         ./autogen.sh
     fi
     ./configure --prefix=$pkgprefix
-    make
+    makej all
 }
 
 function install-tmux {
@@ -1028,7 +1038,7 @@ function build-vim {
                 --enable-tclinterp=yes     \
                 --enable-gui=gtk3          \
                 --enable-cscope
-    make
+    makej all
 }
 
 function install-vim {
@@ -1113,12 +1123,11 @@ function build-zsh {
         ./Util/preconfig
     fi
     ./configure --prefix=$pkgprefix
-    make
+    makej all
 }
 
 function install-zsh {
-    make install
-    make install.info
+    make install install.info
     rm $infodir/dir
 }
 
