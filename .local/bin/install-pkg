@@ -342,24 +342,29 @@ function stow-ctags {
 ## ** emacs
 
 function clone-emacs {
-    git clone -b master --depth 1 'git://git.sv.gnu.org/emacs.git'
+    git clone -b feature/native-comp --depth 1 'git://git.sv.gnu.org/emacs.git'
 }
 
 function update-emacs {
     git fetch --depth=1 --update-shallow origin
-    git reset --hard origin/master
+    git reset --hard origin/feature/native-comp
 }
 
 function build-emacs {
     if [[ ! -x ./configure ]] ; then
         ./autogen.sh autoconf
+        ./autogen.sh git
     fi
-    ./configure --prefix=$pkgprefix    \
-                --with-x               \
-                --with-x-toolkit=lucid \
-                --with-cairo           \
-                --with-json            \
-                --with-imagemagick
+    env CC='gcc-10' CXX='g++-10'                \
+        ./configure --prefix=$pkgprefix         \
+                    --with-x                    \
+                    --with-x-toolkit=lucid      \
+                    --with-mailutils            \
+                    --with-imagemagick          \
+                    --with-json                 \
+                    --without-gsettings         \
+                    --without-gconf             \
+                    --with-native-compilation
     make bootstrap
     make docs
 }
