@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210408112843
+;; Version: 20210408113044
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -79,7 +79,8 @@
   (interactive "P")
   (unless helm-project--ff-source
     (setq helm-project--ff-source (helm-make-source
-                           "Find files in project" 'helm-project--ff-source-class)))
+                                      "Find files in project"
+                                      'helm-project--ff-source-class)))
   (helm :sources 'helm-project--ff-source
         :case-fold-search helm-file-name-case-fold-search
         :prompt "Find file: "
@@ -127,7 +128,8 @@
   (interactive "P")
   (unless helm-project--lb-source
     (setq helm-project--lb-source (helm-make-source
-                           "Project buffers" 'helm-project--lb-source-class)))
+                                      "Project buffers"
+                                      'helm-project--lb-source-class)))
   (helm :sources '(helm-project--lb-source helm-source-buffer-not-found)
         :truncate-lines helm-buffers-truncate-lines
         :left-margin-width helm-buffers-left-margin-width
@@ -323,7 +325,8 @@ non-nil, the runner is defined automatically.
   (interactive)
   (unless helm-project--sp-source
     (setq helm-project--sp-source (helm-make-source
-                           "Switch project" 'helm-project--sp-source-class)))
+                                      "Switch project"
+                                      'helm-project--sp-source-class)))
   (helm :sources 'helm-project--sp-source
         :prompt "Switch to project: "
         :buffer "*helm project switch project*"))
