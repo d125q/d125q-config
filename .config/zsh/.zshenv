@@ -4,6 +4,8 @@ typeset -gxTU LD_LIBRARY_PATH ld_library_path
 typeset -gxTU PKG_CONFIG_PATH pkg_config_path
 typeset -gxTU PYTHONPATH pythonpath
 
+MANPATH=:
+
 typeset -a components=(
     cargo
     go
@@ -31,6 +33,7 @@ function setup_go {
         unset FZF_HOME
         return 1
     }
+    manpath+=$FZF_HOME/man
 }
 
 ## ** pyenv (https://github.com/pyenv/pyenv)
@@ -115,3 +118,7 @@ pkg_config_path+=($HOME/.local/lib/pkgconfig
 
 ## * Disable telemetry for .NET Core
 typeset -gx DOTNET_CLI_TELEMETRY_OPTOUT=true
+
+# * Export
+
+typeset -gx path PATH manpath MANPATH
