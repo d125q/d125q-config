@@ -31,17 +31,58 @@ source ${ZDOTDIR:-$HOME}/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 ## * Completions and key bindings for fzf
 if [[ -v FZF_HOME ]] ; then
+    # Source the files
     source $FZF_HOME/shell/completion.zsh
     source $FZF_HOME/shell/key-bindings.zsh
-    ## Rebind fzf-history-widget
+    # Bring back the default bindings
     bindkey '^R' history-incremental-pattern-search-backward
-    bindkey '^X[' fzf-history-widget
-    # Rebind fzf-file-widget
     bindkey '^T' transpose-chars
-    bindkey '^X]' fzf-file-widget
-    # Rebind fzf-cd-widget
     bindkey '\ec' capitalize-word
-    bindkey '^X\' fzf-cd-widget
+    # Disable REPORTTIME for the fzf ZLE widgets and bind
+    function d125q-fzf-completion {
+        REPORTTIME=-1 fzf-completion
+    }
+    function d125q-fzf-file-widget {
+        REPORTTIME=-1 fzf-file-widget
+    }
+    function d125q-fzf-cd-widget {
+        REPORTTIME=-1 fzf-cd-widget
+    }
+    zle -N d125q-fzf-completion
+    zle -N d125q-fzf-file-widget
+    zle -N d125q-fzf-cd-widget
+    bindkey '^I' d125q-fzf-completion
+    bindkey '^Xx' fzf-history-widget
+    bindkey '^X[' d125q-fzf-file-widget
+    bindkey '^X,' d125q-fzf-cd-widget
+
+    # Check for fd
+    if [[ -v commands[fd] ]] ; then
+        # Make fzf use fd
+        typeset -gx FZF_CTRL_T_COMMAND="${commands[fd]} -L -H --min-depth 1 -tf -tl" \
+                    FZF_ALT_C_COMMAND="${commands[fd]} -L -H --min-depth 1 -td"
+        # Define and bind custom ZLE widgets that start from $HOME or /
+        function d125q-fzf-file-widget-home {
+            FZF_CTRL_T_COMMAND="$FZF_CTRL_T_COMMAND . '$HOME'" d125q-fzf-file-widget
+        }
+        function d125q-fzf-file-widget-root {
+            FZF_CTRL_T_COMMAND="$FZF_CTRL_T_COMMAND . /bin /etc /opt /usr" d125q-fzf-file-widget
+        }
+        function d125q-fzf-cd-widget-home {
+            FZF_ALT_C_COMMAND="$FZF_ALT_C_COMMAND . '$HOME'" d125q-fzf-cd-widget
+        }
+        function d125q-fzf-cd-widget-root {
+            FZF_ALT_C_COMMAND="$FZF_ALT_C_COMMAND . /bin /etc /opt /usr" d125q-fzf-cd-widget
+        }
+        zle -N d125q-fzf-file-widget-home
+        zle -N d125q-fzf-file-widget-root
+        zle -N d125q-fzf-cd-widget-home
+        zle -N d125q-fzf-cd-widget-root
+        bindkey '^X]' d125q-fzf-file-widget-home
+        bindkey '^X\' d125q-fzf-file-widget-root
+        bindkey '^X.' d125q-fzf-cd-widget-home
+        bindkey '^X/' d125q-fzf-cd-widget-root
+    fi
 fi
 
 ## * Completions for pip and pipenv

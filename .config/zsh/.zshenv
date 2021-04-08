@@ -31,10 +31,6 @@ function setup_go {
         unset FZF_HOME
         return 1
     }
-    if [[ -v commands[fd] ]] ; then
-        typeset -gx FZF_CTRL_T_COMMAND="${commands[fd]} -L --min-depth 1 -H -tf -tl -td"        \
-                    FZF_ALT_C_COMMAND="${commands[fd]} -L --min-depth 1 -H -td"
-    fi
 }
 
 ## ** pyenv (https://github.com/pyenv/pyenv)
