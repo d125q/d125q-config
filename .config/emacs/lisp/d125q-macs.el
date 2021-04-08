@@ -3,9 +3,8 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210407131658
+;; Version: 20210408112851
 ;; Keywords: convenience
-;; Package-Requires: (cl-lib eieio-core d125q-lib)
 
 ;;; Commentary:
 

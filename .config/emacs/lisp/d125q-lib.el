@@ -3,9 +3,8 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210406205145
+;; Version: 20210408112848
 ;; Keywords: convenience
-;; Package-Requires: (cl-lib epa)
 
 ;;; Commentary:
 
