@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210408112130
+;; Version: 20210408155546
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -75,7 +75,8 @@
 (d125q-customizeq
  highlight-nonselected-windows nil
  cursor-in-non-selected-windows nil
- fast-but-imprecise-scrolling t)
+ fast-but-imprecise-scrolling t
+ redisplay-skip-fontification-on-input t)
 
 ;; ** Mini frames and windows
 

@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210408112146
+;; Version: 20210408155940
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -867,6 +867,8 @@ will be used for this purpose."
 
 (d125q-customizeq
  show-paren-ring-bell-on-mismatch t
+ show-paren-when-point-in-periphery t
+ show-paren-when-point-inside-paren t
  show-paren-mode t)
 
 ;; ** Scroll bars
