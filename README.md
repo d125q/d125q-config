@@ -63,6 +63,8 @@ $ stow d125q-config
     INFO     Scraping files for d125q-loaddefs.el...
     INFO     Scraping files for d125q-loaddefs.el...done
   ```
+  If the autoloads are not present, they will be loaded eagerly.  To clean the
+  autoloads, run `make clean`.
 - GNU Emacs should be run as a daemon using its systemd service.  There is
   additionally a [drop-in](.config/systemd/user/emacs.service.d/override.conf)
   to set the correct environment.
@@ -72,23 +74,26 @@ $ stow d125q-config
 [`install-pkg`](.local/bin/install-pkg) is a script to build and install
 packages locally.  It relies on [GNU Stow][stow-homepage].
 
-```
+``` console
+$ install-pkg -h
 Usage: install-pkg [OPTION]... PATTERN...
 Install packages whose names match PATTERN from their local repositories.
 Options:
-    -noupdate      do not update from the remote repositories
-    -nobuild       do not build the packages
-    -nostow        do not stow the packages or their configuration files
-    -pkgdir DIR    directory where packages will be installed
-                       (default: $HOME/.local/stow)
-    -cfgdir DIR    directory where configuration files will be installed
-                       (default: $HOME/stow)
-    -srcdir DIR    directory containing the local repositories
-                       (default: $HOME/.local/src)
-    -altdir DIR    directory containing the alternatives
-                       (default: $HOME/Alternatives)
-    -admindir DIR  directory containing the administrative information
-                       (default: $HOME/.var/lib/dpkg)
+    -h, -help          display this help and exit
+    -j N, -parallel N  use up to N concurrent jobs when building packages
+    -noupdate          do not update from the remote repositories
+    -nobuild           do not build the packages
+    -nostow            do not stow the packages or their configuration files
+    -pkgdir DIR        directory where packages will be installed
+                           (default: $HOME/.local/stow)
+    -cfgdir DIR        directory where configuration files will be installed
+                           (default: $HOME/stow)
+    -srcdir DIR        directory containing the local repositories
+                           (default: $HOME/.local/src)
+    -altdir DIR        directory containing the alternatives
+                           (default: $HOME/Alternatives)
+    -admindir DIR      directory containing the administrative information
+                           (default: $HOME/.var/lib/dpkg)
 ```
 
 ### `latexmk`
