@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210321T155707+0100
+;; Version: 20210408112130
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -17,158 +17,176 @@
 ;; * Preamble
 
 (require 'cl-lib)
-(cl-pushnew (locate-user-emacs-file "lisp" ".emacs-lisp") load-path)
-(require 'd125q-utils)
+(cl-pushnew (locate-user-emacs-file "lisp") load-path)
+(require 'd125q-lib)
 
-(defvar secret-plist-file (locate-user-emacs-file "secret-plist.gpg")
+(defvar d125q-secret-plist-file (locate-user-emacs-file "secret-plist.gpg")
   "File in which secret data is stored.")
 
-(defvar secret-plist (when (file-exists-p secret-plist-file)
-                       (with-temp-buffer
-                         (insert-file-contents secret-plist-file)
-                         (read (current-buffer))))
-  "Decrypted contents of `secret-plist-file'.")
+(defvar d125q-secret-plist (when (file-exists-p d125q-secret-plist-file)
+                             (with-temp-buffer
+                               (insert-file-contents d125q-secret-plist-file)
+                               (read (current-buffer))))
+  "Decrypted contents of `d125q-secret-plist-file'.")
 
 ;; * Evaluation
 
-(customize-variables
-  eval-expression-debug-on-error nil
-  user-emacs-directory-warning nil
-  load-prefer-newer t)
+(d125q-customizeq
+ eval-expression-debug-on-error nil
+ load-prefer-newer t
+ ad-redefinition-action 'accept
+ user-emacs-directory-warning nil)
+
+;; * Startup
+
+(d125q-customizeq
+ inhibit-startup-screen t
+ inhibit-startup-message t
+ inhibit-startup-echo-area-message (user-login-name)
+ initial-scratch-message nil
+ initial-major-mode 'fundamental-mode)
 
 ;; * Personal data
 
-(plist/customize-variables (secret-plist user)
+(d125q-plist-customizeq (d125q-secret-plist :user)
   user-full-name
   user-mail-address)
 
-(customize-variables
-  plstore-encrypt-to user-mail-address)
+(d125q-customizeq
+ plstore-encrypt-to user-mail-address)
 
 ;; * Appearance
 
-;; ** Frame parameters
+;; ** Frames
 
-(customize-variables
-  default-frame-alist '((undecorated . nil)
-                        (vertical-scroll-bars . nil)
-                        (horizontal-scroll-bars . nil)
-                        (menu-bar-lines . 0)
-                        (tool-bar-lines . 0)
-                        (border-width . 0)
-                        (internal-border-width . 0)
-                        (fullscreen . maximized)))
+(d125q-customizeq
+ default-frame-alist '((undecorated . nil)
+                       (vertical-scroll-bars . nil)
+                       (horizontal-scroll-bars . nil)
+                       (menu-bar-lines . 0)
+                       (tool-bar-lines . 0)
+                       (border-width . 0)
+                       (internal-border-width . 0)
+                       (fullscreen . maximized))
+ frame-inhibit-implied-resize t)
 
-;; ** Resizing of mini frames and windows
+;; ** Windows
 
-(customize-variables
-  resize-mini-frames t
-  resize-mini-windows 'grow-only)
+(d125q-customizeq
+ highlight-nonselected-windows nil
+ cursor-in-non-selected-windows nil
+ fast-but-imprecise-scrolling t)
+
+;; ** Mini frames and windows
+
+(d125q-customizeq
+ resize-mini-frames t
+ resize-mini-windows 'grow-only)
 
 ;; ** Tool bars
 
-(customize-variables
-  tool-bar-mode nil)
+(d125q-customizeq
+ tool-bar-mode nil)
 
 ;; ** Dialog boxes
 
-(customize-variables
-  use-dialog-box nil
-  use-file-dialog nil)
+(d125q-customizeq
+ use-dialog-box nil
+ use-file-dialog nil)
 
 ;; ** Menu bars and prompts
 
-(customize-variables
-  menu-bar-mode nil
-  menu-prompting t)
+(d125q-customizeq
+ menu-bar-mode nil
+ menu-prompting t)
 
 ;; ** Empty lines and buffer boundaries
 
-(customize-variables
-  indicate-empty-lines t
-  indicate-buffer-boundaries 'left)
+(d125q-customizeq
+ indicate-empty-lines t
+ indicate-buffer-boundaries 'left)
 
 ;; ** Bell
 
-(customize-variables
-  visible-bell t)
+(d125q-customizeq
+ visible-bell t)
 
 ;; ** X11-related things
 
-(customize-variables
-  x-stretch-cursor t
-  x-underline-at-descent-line t
-  x-use-underline-position-properties t)
+(d125q-customizeq
+ x-stretch-cursor t
+ x-underline-at-descent-line t
+ x-use-underline-position-properties t)
 
 ;; * Packages
 
-(customize-variables
-  async-bytecomp-allowed-packages nil
-  package-selected-packages '(ace-link
-                              ace-window
-                              ack
-                              ada-mode
-                              ada-ref-man
-                              ag
-                              amx
-                              arduino-mode
-                              auctex
-                              avy
-                              browse-kill-ring
-                              cider
-                              clojure-mode
-                              company
-                              csv-mode
-                              deadgrep
-                              ediprolog
-                              eglot
-                              erlang
-                              ess
-                              expand-region
-                              flycheck
-                              geiser
-                              ggtags
-                              git-link
-                              groovy-mode
-                              haskell-mode
-                              helm
-                              helm-ls-git
-                              helm-ls-svn
-                              helpful
-                              htmlize
-                              ibuffer-project
-                              ido-completing-read+
-                              iedit
-                              js2-mode
-                              json-mode
-                              julia-mode
-                              lua-mode
-                              magit
-                              markdown-mode
-                              merlin
-                              minions
-                              modus-themes
-                              multiple-cursors
-                              org-plus-contrib
-                              pdf-tools
-                              pyvenv
-                              rg
-                              sbt-mode
-                              scala-mode
-                              slime
-                              sml-mode
-                              sql-indent
-                              tuareg
-                              wgrep
-                              wgrep-ack
-                              wgrep-ag
-                              which-key
-                              yaml-mode
-                              yasnippet)
-  package-archives '(("elpa" . "https://elpa.gnu.org/packages/")
-                     ("melpa" . "https://melpa.org/packages/")
-                     ("org" . "https://orgmode.org/elpa/"))
-  package-quickstart t)
+(d125q-customizeq
+ async-bytecomp-allowed-packages nil
+ package-selected-packages '(ace-link
+                             ace-window
+                             ack
+                             ada-mode
+                             ada-ref-man
+                             ag
+                             amx
+                             arduino-mode
+                             auctex
+                             avy
+                             browse-kill-ring
+                             cider
+                             clojure-mode
+                             company
+                             csv-mode
+                             deadgrep
+                             ediprolog
+                             eglot
+                             erlang
+                             ess
+                             expand-region
+                             flycheck
+                             geiser
+                             ggtags
+                             git-link
+                             groovy-mode
+                             haskell-mode
+                             helm
+                             helm-ls-git
+                             helm-ls-svn
+                             helpful
+                             htmlize
+                             ibuffer-project
+                             ido-completing-read+
+                             iedit
+                             js2-mode
+                             json-mode
+                             julia-mode
+                             lua-mode
+                             magit
+                             markdown-mode
+                             merlin
+                             minions
+                             modus-themes
+                             multiple-cursors
+                             org-plus-contrib
+                             pdf-tools
+                             pyvenv
+                             rg
+                             sbt-mode
+                             scala-mode
+                             slime
+                             sml-mode
+                             sql-indent
+                             tuareg
+                             wgrep
+                             wgrep-ack
+                             wgrep-ag
+                             which-key
+                             yaml-mode
+                             yasnippet)
+ package-archives '(("elpa" . "https://elpa.gnu.org/packages/")
+                    ("melpa" . "https://melpa.org/packages/")
+                    ("org" . "https://orgmode.org/elpa/"))
+ package-quickstart t)
 
 ;; * Safe commands, variables, and expressions
 
@@ -176,23 +194,23 @@
 (put 'downcase-region 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 
-(customize-variables
-  safe-local-variable-values
-  '((TeX-command-extra-options . "-shell-escape")))
+(d125q-customizeq
+ safe-local-variable-values '((TeX-command-extra-options . "-shell-escape")))
 
 ;; * History
 
-(customize-variables
-  history-delete-duplicates t
-  history-length t)
+(d125q-customizeq
+ history-delete-duplicates t
+ history-length t)
 
 ;; * Postamble
 
-;;; Local Variables:
-;;; eval: (add-hook 'before-save-hook 'time-stamp nil t)
-;;; time-stamp-start: "^;; Version: "
-;;; time-stamp-format: "%Y%02m%02dT%02H%02M%02S%5z"
-;;; time-stamp-end: "$"
-;;; End:
+;; Local Variables:
+;; eval: (add-hook 'before-save-hook 'time-stamp nil t)
+;; time-stamp-start: "^;; Version: "
+;; time-stamp-time-zone: t
+;; time-stamp-format: "%Y%02m%02d%02H%02M%02S%"
+;; time-stamp-end: "$"
+;; End:
 
 ;;; early-init.el ends here

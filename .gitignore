@@ -1,5 +1,14 @@
+# -*- mode: gitignore; -*-
+
+*~
+*.elc
+*.eln
+
 /.config/emacs/custom.el
 /.config/emacs/secret-plist.gpg
+/.config/emacs/lisp/d125q-loaddefs.el
+/.config/emacs/lisp/d125q-macs-loaddefs.el
+/.config/emacs/lisp/helm-project-loaddefs.el
 /.authinfo
 /.authinfo.gpg
 /tnsnames.ora

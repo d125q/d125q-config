@@ -1,9 +1,9 @@
-;;; d125q-helm-project.el --- d125q's Helm interface to `project.el'  -*- lexical-binding: t; -*-
+;;; helm-project.el --- Helm interface to `project.el'  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210330T133528+0200
+;; Version: 20210407141839
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -17,8 +17,6 @@
 
 ;; * Preamble
 
-(require 'cl-lib)
-(require 'helm)
 (require 'helm-files)
 (require 'project)
 
@@ -27,7 +25,7 @@
 
 ;; * `helm-project-find-files'
 
-(defclass hpff/source-class (helm-source-sync)
+(defclass helm-project--ff-source-class (helm-source-sync)
   ((init
     :initform (lambda ()
                 (if-let* ((project (project-current))
@@ -69,26 +67,27 @@
    (migemo
     :initform t)
    (group
-    :initform 'd125q-helm-project))
+    :initform 'helm-project))
   :documentation "Source class for `helm-project-find-files'.")
 
-(defvar hpff/source nil
+(defvar helm-project--ff-source nil
   "Source for `helm-project-find-files'.")
 
+;;;###autoload
 (defun helm-project-find-files (_arg)
   "Find files in the current project using Helm."
   (interactive "P")
-  (unless hpff/source
-    (setq hpff/source (helm-make-source
-                          "Find files in project" 'hpff/source-class)))
-  (helm :sources 'hpff/source
+  (unless helm-project--ff-source
+    (setq helm-project--ff-source (helm-make-source
+                           "Find files in project" 'helm-project--ff-source-class)))
+  (helm :sources 'helm-project--ff-source
         :case-fold-search helm-file-name-case-fold-search
         :prompt "Find file: "
         :buffer "*helm project find files*"))
 
 ;; * `helm-project-list-buffers'
 
-(defclass hplb/source-class (helm-source-buffers)
+(defclass helm-project--lb-source-class (helm-source-buffers)
   ((project
     :initarg :project
     :initform nil
@@ -115,19 +114,21 @@
                   (user-error "Invalid state; `project' is nil"))))
    (keymap
     :initform helm-buffer-map)
-   (group :initform 'd125q-helm-project))
+   (group
+    :initform 'helm-project))
   :documentation "Source class for `helm-project-list-buffers'.")
 
-(defvar hplb/source nil
+(defvar helm-project--lb-source nil
   "Source for `helm-project-list-buffers'.")
 
+;;;###autoload
 (defun helm-project-list-buffers (_arg)
   "List buffers in the current project using Helm."
   (interactive "P")
-  (unless hplb/source
-    (setq hplb/source (helm-make-source
-                          "Project buffers" 'hplb/source-class)))
-  (helm :sources '(hplb/source helm-source-buffer-not-found)
+  (unless helm-project--lb-source
+    (setq helm-project--lb-source (helm-make-source
+                           "Project buffers" 'helm-project--lb-source-class)))
+  (helm :sources '(helm-project--lb-source helm-source-buffer-not-found)
         :truncate-lines helm-buffers-truncate-lines
         :left-margin-width helm-buffers-left-margin-width
         :prompt "Switch to buffer: "
@@ -135,6 +136,7 @@
 
 ;; * `helm-project-grep'
 
+;;;###autoload
 (defun helm-project-grep (arg)
   "Grep the current project using Helm."
   (interactive "P")
@@ -146,34 +148,44 @@
 
 ;; ** :action
 
-(defun hpsp/project--remove-from-project-list (_project)
+(defun helm-project--sp-remove-from-project-list (_project)
   "Remove all marked projects from the project list."
   (with-helm-buffer
-    (mapc #'project--remove-from-project-list (helm-marked-candidates))
+    (mapc #'(lambda (project)
+              (project--remove-from-project-list project nil))
+          (helm-marked-candidates))
     (helm-force-update)))
 
-(defmacro hpsp/define-actions (&rest spec)
-  "Define actions for HPSP out of SPEC."
-  (let (defuns values action)
+(defmacro helm-project--sp-define-actions (&rest spec)
+  "Define the actions for `helm-project-switch-project'.
+Give each action a NAME and a CMD.  Unless SKIP-ACTION-DEF is
+non-nil, the action is automatically defined.
+
+\(fn (NAME CMD &key SKIP-ACTION-DEF)...)"
+  (declare (debug (&rest (stringp symbolp &rest [":skip-action-def" booleanp]))))
+  (let (defuns vals action)
     (while spec
-      (cl-destructuring-bind (name command &key skip-defun) (pop spec)
-        (setq action (intern (format "hpsp/%s" command)))
-        (unless skip-defun
+      (cl-destructuring-bind (name cmd &key skip-action-def) (pop spec)
+        (cl-check-type name stringp)
+        (cl-check-type cmd symbolp)
+        (cl-check-type skip-action-def booleanp)
+        (setq action (intern (format "helm-project--sp-%s" cmd)))
+        (unless skip-action-def
           (push `(defun ,action (project)
-                   ,(format "Run `%s' in PROJECT." command)
+                   ,(format "Run `%s' in PROJECT." cmd)
                    (let ((default-directory project)
                          (project-current-inhibit-prompt t))
-                     (call-interactively #',command)))
+                     (call-interactively #',cmd)))
                 defuns))
-        (push `(cons ,name ',action) values)))
+        (push `(cons ,name ',action) vals)))
     `(progn
        ,@(nreverse
-          (cons `(defvar hpsp/actions
-                   (list ,@(nreverse values))
+          (cons `(defvar helm-project--sp-actions
+                   (list ,@(nreverse vals))
                    "Actions for `helm-project-switch-project'.")
                 defuns)))))
 
-(hpsp/define-actions
+(helm-project--sp-define-actions
  ("Magit status" magit-status)
  ("VC-Dir" vc-dir)
  ("Dired" dired)
@@ -187,70 +199,80 @@
  ("Run `lgrep'" lgrep)
  ("Run `rgrep'" rgrep)
  ("Run `zrgrep'" zrgrep)
- ("Run `rg'" rg)
- ("Run `deadgrep'" deadgrep)
  ("Run `vc-git-grep'" vc-git-grep)
- ("Remove from project list" project--remove-from-project-list :skip-defun t))
+ ("Run `rg-project'" rg-project)
+ ("Run `deadgrep'" deadgrep)
+ ("Remove from project list" remove-from-project-list :skip-action-def t))
 
 ;; ** :action-transformer
 
-(defun hpsp/action-transformer (actions candidate)
+(defun helm-project--sp-action-transformer (actions candidate)
+  "Action transformer for `helm-project-switch-projects'.
+If `magit-toplevel' for CANDIDATE returns nil, remove
+`magit-status' from the available ACTIONS."
   (if (magit-toplevel candidate)
       actions
-    (dolist (action '(magit-status vc-git-grep) actions)
+    (dolist (action '(magit-status) actions)
       (setq actions (rassq-delete-all action actions)))))
 
 ;; ** :persistent-action-if
 
-(defun hpsp/persistent-action-if (candidate)
+(defun helm-project--sp-persistent-action-if (candidate)
   "Persistent action for `helm-project-switch-project'.
-
-It runs `magit-status' if possible, else `vc-dir'.  If a prefix
-argument was supplied, `vc-dir' is run even when `magit-status'
-is possible."
+If `magit-toplevel' for CANDIDATE returns nil, run `vc-dir'.
+Otherwise, run `magit-status'.  With a prefix argument, always
+run `vc-dir'."
   (if (or current-prefix-arg (not (magit-toplevel candidate)))
       'vc-dir
     'magit-status))
 
 ;; ** :keymap
 
-(defun hpsp/run-project--remove-from-project-list ()
-  "Run `project--remove-from-project-list' with a key binding."
+(defun helm-project--sp-run-remove-from-project-list ()
+  "Run `helm-project--sp-remove-from-project-list' with a key binding."
   (interactive)
   (with-helm-alive-p
-    (helm-set-attr 'project--remove-from-project-list
-                   '(hpsp/project--remove-from-project-list . never-split))
-    (helm-execute-persistent-action 'project--remove-from-project-list)))
-(put 'hpsp/run-project--remove-from-project-list 'helm-only t)
+    (helm-set-attr 'helm-project--sp-remove-from-project-list
+                   '(helm-project--sp-remove-from-project-list . never-split))
+    (helm-execute-persistent-action 'helm-project--sp-remove-from-project-list)))
+(put 'helm-project--sp-run-remove-from-project-list 'helm-only t)
 
-(defmacro hpsp/define-keymap (&rest spec)
-  "Define a keymap for HPSP out of SPEC."
-  (let (defuns props kbds runner action)
+(defmacro helm-project--sp-define-keymap (&rest spec)
+  "Define the keymap for `helm-project-switch-project'.
+Bind each KEY to a runner for its CMD.  Unless SKIP-RUNNER-DEF is
+non-nil, the runner is defined automatically.
+
+\(fn (KEY CMD &key SKIP-RUNNER-DEF)...)"
+  (declare (debug (&rest (form symbolp &rest [":skip-runner-def" booleanp]))))
+  (let ((temp-map (make-symbol "temp-map"))
+        defuns props kbds action runner)
     (while spec
-      (cl-destructuring-bind (key command &key skip-defun) (pop spec)
-        (setq runner (intern (format "hpsp/run-%s" command))
-              action (intern (format "hpsp/%s" command)))
-        (unless skip-defun
+      (cl-destructuring-bind (key cmd &key skip-runner-def) (pop spec)
+        (cl-check-type cmd symbolp)
+        (cl-check-type skip-runner-def booleanp)
+        (setq action (intern (format "helm-project--sp-%s" cmd))
+              runner (intern (format "helm-project--sp-run-%s" cmd)))
+        (unless skip-runner-def
           (push `(defun ,runner ()
-                           ,(format "Run `%s' with a key binding." command)
-                           (interactive)
-                           (with-helm-alive-p
-                             (helm-exit-and-execute-action ',action)))
+                   ,(format "Run `%s' with a key binding." cmd)
+                   (interactive)
+                   (with-helm-alive-p
+                     (helm-exit-and-execute-action ',action)))
                 defuns)
           (push `(put ',runner 'helm-only t) props))
-        (push `(define-key map (kbd ,key) ',runner) kbds)))
+        (push `(define-key ,temp-map (kbd ,key) ',runner) kbds)))
     `(progn
        ,@(nreverse
-          (cons `(defvar hpsp/map
-                   (let ((map (make-sparse-keymap)))
+          (cons `(defvar helm-project--sp-map
+                   (let ((,temp-map (make-sparse-keymap)))
                      ,@(nreverse kbds)
-                     map)
+                     ,temp-map)
                    "Keymap for `helm-project-switch-project'.")
                 (nconc props defuns))))))
 
-(hpsp/define-keymap
+(helm-project--sp-define-keymap
  ("C-x g" magit-status)
- ("C-x v" vc-dir)
+ ("C-x v d" vc-dir)
  ("C-x d" dired)
  ("C-x C-f" helm-project-find-files)
  ("C-x b" helm-project-list-buffers)
@@ -258,51 +280,65 @@ is possible."
  ("C-c C-s" project-shell)
  ("C-c C-e" project-eshell)
  ("C-c C-f" project-find-regexp)
- ("C-c C-d" project--remove-from-project-list :skip-defun t)
+ ("C-c C-d" remove-from-project-list :skip-runner-def t)
  ("M-s g g" grep)
  ("M-s g l" lgrep)
  ("M-s g r" rgrep)
  ("M-s g z" zrgrep)
- ("M-s d" deadgrep)
- ("M-s r" rg)
- ("M-s v" vc-git-grep))
+ ("M-s g v" vc-git-grep)
+ ("M-s r" rg-project)
+ ("M-s d" deadgrep))
 
 ;; ** Main function with associated data
 
-(defclass hpsp/source-class (helm-source-sync)
-  ((init :initform (lambda ()
-                     (project--ensure-read-project-list)
-                     (helm-set-attr 'candidates project--list)))
-   (action :initform 'hpsp/actions)
-   (action-transformer :initform 'hpsp/action-transformer)
-   (persistent-action-if :initform 'hpsp/persistent-action-if)
-   (persistent-help :initform "Magit if possible, else (C-u to force) VC-Dir")
-   (keymap :initform hpsp/map)
-   (volatile :initform t)
-   (migemo :initform t)
-   (group :initform 'd125q-helm-project)))
+(defclass helm-project--sp-source-class (helm-source-sync)
+  ((init
+    :initform (lambda ()
+                (project--ensure-read-project-list)
+                (helm-set-attr 'candidates project--list)))
+   (action
+    :initform 'helm-project--sp-actions)
+   (action-transformer
+    :initform 'helm-project--sp-action-transformer)
+   (persistent-action-if
+    :initform 'helm-project--sp-persistent-action-if)
+   (persistent-help
+    :initform "Magit if possible, else (C-u to force) VC-Dir")
+   (keymap
+    :initform helm-project--sp-map)
+   (volatile
+    :initform t)
+   (migemo
+    :initform t)
+   (group
+    :initform 'helm-project))
+  :documentation "Source class for `helm-project-switch-project'.")
 
-(defvar hpsp/source nil
+(defvar helm-project--sp-source nil
   "Source for `helm-project-switch-project'.")
 
+;;;###autoload
 (defun helm-project-switch-project ()
+  "Switch project using Helm."
   (interactive)
-  (unless hpsp/source
-    (setq hpsp/source (helm-make-source
-                          "Switch project" 'hpsp/source-class)))
-  (helm :sources 'hpsp/source
+  (unless helm-project--sp-source
+    (setq helm-project--sp-source (helm-make-source
+                           "Switch project" 'helm-project--sp-source-class)))
+  (helm :sources 'helm-project--sp-source
         :prompt "Switch to project: "
         :buffer "*helm project switch project*"))
 
 ;; * Postamble
 
-(provide 'd125q-helm-project)
+(provide 'helm-project)
 
-;;; Local Variables:
-;;; eval: (add-hook 'before-save-hook 'time-stamp nil t)
-;;; time-stamp-start: "^;; Version: "
-;;; time-stamp-format: "%Y%02m%02dT%02H%02M%02S%5z"
-;;; time-stamp-end: "$"
-;;; End:
+;; Local Variables:
+;; generated-autoload-file: "helm-project-loaddefs.el"
+;; eval: (add-hook 'before-save-hook 'time-stamp nil t)
+;; time-stamp-start: "^;; Version: "
+;; time-stamp-time-zone: t
+;; time-stamp-format: "%Y%02m%02d%02H%02M%02S%"
+;; time-stamp-end: "$"
+;; End:
 
-;;; d125q-helm-project.el ends here
+;;; helm-project.el ends here
