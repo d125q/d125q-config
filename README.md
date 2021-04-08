@@ -58,7 +58,7 @@ $ stow d125q-config
   EMACSLOADPATH= 'emacs' --batch --no-site-file --no-site-lisp -l autoload \
   --eval '(setq autoload-ensure-writable t)' \
   --eval '(setq generated-autoload-file "d125q-loaddefs.el")' \
-          -f batch-update-autoloads .
+  -f batch-update-autoloads .
     SCRAPE   .
     INFO     Scraping files for d125q-loaddefs.el...
     INFO     Scraping files for d125q-loaddefs.el...done

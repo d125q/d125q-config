@@ -10,7 +10,7 @@ autoloads: d125q-macs.el d125q-lib.el helm-project.el
 	$(emacs) -l autoload \
 	--eval '(setq autoload-ensure-writable t)' \
 	--eval '(setq generated-autoload-file "d125q-loaddefs.el")' \
-        -f batch-update-autoloads .
+	-f batch-update-autoloads .
 
 .PHONY: clean
 clean:
