@@ -49,7 +49,20 @@ $ stow d125q-config
     without any modifier keys or the <kbd>Super</kbd> modifier key.
   + Key sequences used by the window manager should not be touched by GNU Emacs
     and vice versa.
-- Packages should only be loaded when really needed.
+- Code should be autoloaded as much as possible.
+- The [`lisp` directory](.config/emacs/lisp) contains a few custom libraries
+  that are required.  To extract autoloads:
+  ```console
+  $ cd .config/emacs/lisp
+  $ make
+  EMACSLOADPATH= 'emacs' --batch --no-site-file --no-site-lisp -l autoload \
+  --eval '(setq autoload-ensure-writable t)' \
+  --eval '(setq generated-autoload-file "d125q-loaddefs.el")' \
+          -f batch-update-autoloads .
+    SCRAPE   .
+    INFO     Scraping files for d125q-loaddefs.el...
+    INFO     Scraping files for d125q-loaddefs.el...done
+  ```
 - GNU Emacs should be run as a daemon using its systemd service.  There is
   additionally a [drop-in](.config/systemd/user/emacs.service.d/override.conf)
   to set the correct environment.
