@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210408155940
+;; Version: 20210409124111
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -228,7 +228,7 @@ will be used for this purpose."
   "Default directory for backup files.")
 
 (d125q-customizeq
- backup-directory-alist `((".*" . ,d125q-backup-directory))
+ backup-directory-alist `(("." . ,d125q-backup-directory))
  tramp-backup-directory-alist backup-directory-alist
  make-backup-files t
  vc-make-backup-files t
