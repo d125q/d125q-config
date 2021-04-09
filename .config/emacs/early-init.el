@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210409101009
+;; Version: 20210409214646
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -148,6 +148,7 @@
                              geiser
                              ggtags
                              git-link
+                             gitignore-mode
                              groovy-mode
                              haskell-mode
                              helm
