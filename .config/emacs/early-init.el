@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210408155546
+;; Version: 20210409095142
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -178,6 +178,7 @@
                              sml-mode
                              sql-indent
                              tuareg
+                             w3m
                              wgrep
                              wgrep-ack
                              wgrep-ag
