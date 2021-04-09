@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210409095142
+;; Version: 20210409101009
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -165,6 +165,8 @@
                              magit
                              markdown-mode
                              merlin
+                             merlin-company
+                             merlin-iedit
                              minions
                              modus-themes
                              multiple-cursors
