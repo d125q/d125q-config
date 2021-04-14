@@ -34,6 +34,7 @@ typeset -a pkgnames=(
     emacs
     fontforge
     fontship
+    fvwm3
     girara
     git
     grml-etc-core
@@ -486,6 +487,33 @@ function install-fontship {
 }
 
 function stow-fontship {
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** fvwm3
+
+function clone-fvwm3 {
+    git clone -b master --depth 1 'git@github.com:fvwmorg/fvwm3.git'
+}
+
+function update-fvwm3 {
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
+}
+
+function build-fvwm3 {
+    if [[ ! -x ./configure ]] ; then
+        ./autogen.sh
+    fi
+    ./configure --prefix=$pkgprefix --enable-mandoc
+    parallel-make
+}
+
+function install-fvwm3 {
+    make install
+}
+
+function stow-fvwm3 {
     stow -d $pkgdir -R $pkgname
 }
 
