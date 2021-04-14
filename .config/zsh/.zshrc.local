@@ -34,11 +34,13 @@ if [[ -v FZF_HOME ]] ; then
     # Source the files
     source $FZF_HOME/shell/completion.zsh
     source $FZF_HOME/shell/key-bindings.zsh
+
     # Bring back the default bindings
     bindkey '^R' history-incremental-pattern-search-backward
     bindkey '^T' transpose-chars
     bindkey '\ec' capitalize-word
-    # Disable REPORTTIME for the fzf ZLE widgets and bind
+
+    # Disable REPORTTIME for the ZLE widgets defined by fzf
     function d125q-fzf-completion {
         REPORTTIME=-1 fzf-completion
     }
@@ -51,6 +53,8 @@ if [[ -v FZF_HOME ]] ; then
     zle -N d125q-fzf-completion
     zle -N d125q-fzf-file-widget
     zle -N d125q-fzf-cd-widget
+
+    # Bind the new ZLE widgets
     bindkey '^I' d125q-fzf-completion
     bindkey '^Xx' fzf-history-widget
     bindkey '^X[' d125q-fzf-file-widget
@@ -61,7 +65,8 @@ if [[ -v FZF_HOME ]] ; then
         # Make fzf use fd
         typeset -gx FZF_CTRL_T_COMMAND="${commands[fd]} -L -H --min-depth 1 -tf -tl" \
                     FZF_ALT_C_COMMAND="${commands[fd]} -L -H --min-depth 1 -td"
-        # Define and bind custom ZLE widgets that start from $HOME or /
+
+        # Define custom ZLE widgets that search from $HOME or from root
         function d125q-fzf-file-widget-home {
             FZF_CTRL_T_COMMAND="$FZF_CTRL_T_COMMAND . '$HOME'" d125q-fzf-file-widget
         }
@@ -78,6 +83,8 @@ if [[ -v FZF_HOME ]] ; then
         zle -N d125q-fzf-file-widget-root
         zle -N d125q-fzf-cd-widget-home
         zle -N d125q-fzf-cd-widget-root
+
+        # Bind the custom ZLE widgets
         bindkey '^X]' d125q-fzf-file-widget-home
         bindkey '^X\' d125q-fzf-file-widget-root
         bindkey '^X.' d125q-fzf-cd-widget-home
@@ -87,13 +94,14 @@ fi
 
 ## * Completions for pip and pipenv
 if [[ -v commands[pyenv] ]] ; then
-    eval "$( pyenv exec pip completion --zsh )"
-    eval "$( pyenv exec pipenv --completion )"
+    eval "$( ${commands[pyenv]} exec pip completion --zsh )"
+    eval "$( ${commands[pyenv]} exec pipenv --completion )"
 fi
 
 ## * Initialization of zoxide
-
-eval "$( zoxide init zsh )"
+if [[ -v commands[zoxide] ]] ; then
+    eval "$( ${commands[zoxide]} init zsh )"
+fi
 
 ## * Aliases and functions
 
@@ -119,7 +127,6 @@ function bandcamp-dl {
 function in-subdirs {
     for subdir in *(/) ; do
         pushd -q $subdir
-        printf 'Running "%s" in "%s"\n' "$*" "$( pwd )"
         $@
         popd -q
     done

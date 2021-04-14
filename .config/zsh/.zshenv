@@ -27,7 +27,7 @@ function setup_cargo {
 ## ** Go (https://golang.org/)
 function setup_go {
     [[ -v commands[go] ]] || return 1
-    path+=$( go env GOPATH )/bin
+    path+=$( ${commands[go]} env GOPATH )/bin
     typeset -gx FZF_HOME
     FZF_HOME=$( GO111MODULE=auto go list -f '{{.Dir}}' 'github.com/junegunn/fzf' ) || {
         unset FZF_HOME
@@ -100,7 +100,7 @@ function setup_airflow {
 
 ## ** lesspipe (https://www-zeuthen.desy.de/~friebel/unix/lesspipe.html)
 function setup_lesspipe {
-    [[ -v commands[lesspipe] ]] && eval "$( lesspipe )"
+    [[ -v commands[lesspipe] ]] && eval "$( ${commands[lesspipe]} )"
 }
 
 ## * Run the setup for all enabled components
