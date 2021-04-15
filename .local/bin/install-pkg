@@ -1175,7 +1175,7 @@ function build-zsh {
     if [[ ! -x ./configure ]] ; then
         ./Util/preconfig
     fi
-    ./configure --prefix=$pkgprefix
+    ./configure --prefix=$pkgprefix --enable-pcre
     parallel-make
 }
 
