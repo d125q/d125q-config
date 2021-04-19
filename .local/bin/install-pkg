@@ -816,10 +816,13 @@ function update-noto-cjk {
 function install-noto-cjk {
     local -r tgtdir=$pkgprefix/share/fonts/NotoCJK
     mkdir -p $( dirname $tgtdir )
-    rsync -avu --delete --delete-excluded       \
-          --include='*.otf'                     \
-          --exclude='*'                         \
-          ./ $tgtdir
+    rsync -avu --delete --delete-excluded                                               \
+          --include='*.otf'                                                             \
+          --exclude='*'                                                                 \
+          ./Sans/OTF/{Japanese,Korean,SimplifiedChinese,TraditionalChinese{,HK}}/       \
+          ./Sans/Mono/                                                                  \
+          ./Serif/                                                                      \
+          $tgtdir
 }
 
 function stow-noto-cjk {
