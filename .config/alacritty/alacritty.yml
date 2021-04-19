@@ -9,16 +9,16 @@ window:
 
 font:
   normal:
-    family: Iosevka Custom
+    family: Iosevka Custom Condensed
     style: Regular
   bold:
-    family: Iosevka Custom
+    family: Iosevka Custom Condensed
     style: Bold
   italic:
-    family: Iosevka Custom
+    family: Iosevka Custom Condensed
     style: Italic
   bold_italic:
-    family: Iosevka Custom
+    family: Iosevka Custom Condensed
     style: Bold Italic
   size: 15
 
