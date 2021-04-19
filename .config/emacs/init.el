@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210409124111
+;; Version: 20210419075711
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -138,8 +138,8 @@ will be used for this purpose."
       (helm-exit-and-execute-action 'd125q-helm-ff-magit-status)))
   (put 'd125q-helm-ff-run-magit-status 'helm-only t)
 
-  (cl-pushnew '("Open the Magit status" . d125q-helm-ff-magit-status)
-              (cdr (last helm-find-files-actions)))
+  (push '("Open the Magit status" . d125q-helm-ff-magit-status)
+        (cdr (last helm-find-files-actions)))
 
   (d125q-bind-keys (:map helm-find-files-map)
     "C-x g" d125q-helm-ff-run-magit-status))
@@ -614,7 +614,7 @@ will be used for this purpose."
 
 ;; ** SQL
 
-(cl-pushnew (cons "\\.\\(?:fnc\\|pck\\|prc\\)\\'" 'sql-mode) auto-mode-alist)
+(push (cons "\\.\\(?:fnc\\|pck\\|prc\\)\\'" 'sql-mode) auto-mode-alist)
 
 (defvar d125q-sql-product-alist '(("Exasol" . ansi)
                                   ("Oracle" . oracle))

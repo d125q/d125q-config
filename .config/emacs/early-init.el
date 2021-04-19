@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210409214646
+;; Version: 20210419080434
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -17,7 +17,7 @@
 ;; * Preamble
 
 (require 'cl-lib)
-(cl-pushnew (locate-user-emacs-file "lisp") load-path)
+(cl-pushnew (expand-file-name (locate-user-emacs-file "lisp")) load-path)
 (require 'd125q-lib)
 
 (defvar d125q-secret-plist-file (locate-user-emacs-file "secret-plist.gpg")
