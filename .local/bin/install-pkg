@@ -49,6 +49,7 @@ typeset -a pkgnames=(
     noto-fonts
     otfcc
     password-store
+    polybar
     premake5
     pyenv
     rbenv
@@ -219,8 +220,8 @@ function update-R {
 
 function build-R {
     ./tools/rsync-recommended
-    env CC='gcc-10' CXX='g++-10' FC='gfortran-10' \
-        ./configure --prefix=$pkgprefix
+    CC='gcc-10' CXX='g++-10' FC='gfortran-10' \
+      ./configure --prefix=$pkgprefix
     parallel-make
     parallel-make info pdf
 }
@@ -389,16 +390,16 @@ function build-emacs {
         ./autogen.sh autoconf
         ./autogen.sh git
     fi
-    env CC='gcc-10' CXX='g++-10'                \
-        ./configure --prefix=$pkgprefix         \
-                    --with-x                    \
-                    --with-x-toolkit=lucid      \
-                    --with-mailutils            \
-                    --with-imagemagick          \
-                    --with-json                 \
-                    --without-gsettings         \
-                    --without-gconf             \
-                    --with-native-compilation
+    CC='gcc-10' CXX='g++-10'                    \
+      ./configure --prefix=$pkgprefix           \
+                  --with-x                      \
+                  --with-x-toolkit=lucid        \
+                  --with-mailutils              \
+                  --with-imagemagick            \
+                  --with-json                   \
+                  --without-gsettings           \
+                  --without-gconf               \
+                  --with-native-compilation
     parallel-make bootstrap
     # running make docs with -j is buggy and prone to deadlocks
     # TODO: report to mailing list
@@ -471,18 +472,21 @@ function update-fontship {
 }
 
 function build-fontship {
-    source ${WORKON_HOME:-$HOME/.virtualenvs}/fontship/bin/activate
-    pip install -U -r requirements.txt
-    if [[ ! -x ./configure ]] ; then
-        ./bootstrap.sh
-    fi
-    ./configure --prefix=$pkgprefix
-    parallel-make
-    deactivate
+    (
+        set +euo pipefail
+        workon fontship
+        set -euo pipefail
+        pip install -U -r requirements.txt
+        if [[ ! -x ./configure ]] ; then
+            ./bootstrap.sh
+        fi
+        ./configure --prefix=$pkgprefix
+        parallel-make
+    )
 }
 
 function install-fontship {
-    local bashcompletiondir=$pkgprefix/share/bash-completions
+    local -r bashcompletiondir=$pkgprefix/share/bash-completions
     parallel-make bashcompletiondir=$bashcompletiondir install
 }
 
@@ -610,10 +614,13 @@ function update-liberation-fonts {
 }
 
 function build-liberation-fonts {
-    source ${WORKON_HOME:-$HOME/.virtualenvs}/liberation-fonts/bin/activate
-    pip install -U fonttools
-    parallel-make
-    deactivate
+    (
+        set +euo pipefail
+        workon liberation-fonts
+        set -euo pipefail
+        pip install -U fonttools
+        parallel-make
+    )
 }
 
 function install-liberation-fonts {
@@ -638,9 +645,12 @@ function update-libertinus {
 }
 
 function build-libertinus {
-    source ${WORKON_HOME:-$HOME/.virtualenvs}/fontship/bin/activate
-    fontship make otf
-    deactivate
+    (
+        set +euo pipefail
+        workon fontship
+        set -euo pipefail
+        fontship make otf
+    )
 }
 
 function install-libertinus {
@@ -903,6 +913,44 @@ function install-password-store {
 }
 
 function stow-password-store {
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** polybar
+
+function clone-polybar {
+    git clone --recursive 'git@github.com:polybar/polybar.git'
+}
+
+function update-polybar {
+    git pull --ff-only
+    git submodule update --remote
+}
+
+function build-polybar {
+    mkdir -p build
+    (
+        cd build
+        # We have to use the system's Python installation due to
+        # polybar's dependency on xcbgen.  We therefore need to remove
+        # pyenv's prefix from LD_LIBRARY_PATH and PKG_CONFIG_PATH.
+        local -TU PYENV_PREFIX pyenv_prefix
+        PYENV_PREFIX=$( pyenv prefix )
+        local -ra pyenv_libdir=( ${^pyenv_prefix}/lib )
+        local -ra pyenv_pkgconfigdir=( ${^pyenv_libdir}/pkgconfig )
+        ld_library_path=${ld_library_path:|pyenv_libdir}
+        pkg_config_path=${pkg_config_path:|pyenv_pkgconfigdir}
+        pyenv shell system
+        cmake -DCMAKE_INSTALL_PREFIX=$pkgprefix ..
+        parallel-make
+    )
+}
+
+function install-polybar {
+    parallel-make -C build install
+}
+
+function stow-polybar {
     stow -d $pkgdir -R $pkgname
 }
 
