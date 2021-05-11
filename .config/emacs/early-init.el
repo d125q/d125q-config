@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210419080434
+;; Version: 20210511123157
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -35,7 +35,8 @@
  eval-expression-debug-on-error nil
  load-prefer-newer t
  ad-redefinition-action 'accept
- user-emacs-directory-warning nil)
+ user-emacs-directory-warning nil
+ inhibit-compacting-font-caches nil)
 
 ;; * Startup
 

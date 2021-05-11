@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210419075711
+;; Version: 20210511093814
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -216,7 +216,7 @@ will be used for this purpose."
   "Default directory for auto-save files.")
 
 (d125q-customizeq
- auto-save-file-name-transforms `((".*" ,d125q-auto-save-directory t))
+ auto-save-file-name-transforms `((".*" ,d125q-auto-save-directory sha256))
  auto-save-default t
  auto-save-no-message t
  delete-auto-save-files t)
@@ -831,17 +831,18 @@ will be used for this purpose."
                                     ("" "capt-of" nil)
                                     ("unicode,breaklinks,colorlinks" "hyperref" nil))
  org-latex-packages-alist '()
- org-format-latex-header (mapconcat #'identity
-                                    '("\\documentclass[11pt,preview]{standalone}"
-                                      "[DEFAULT-PACKAGES]"
-                                      "[PACKAGES]"
-                                      "\\babelfont{rm}[Language=Default]{Libertinus Serif}"
-                                      "\\babelfont{sf}[Language=Default]{Libertinus Sans}"
-                                      "\\babelfont{tt}[Language=Default,Scale=MatchLowercase]{Latin Modern Mono}"
-                                      "\\mathtoolsset{mathic}"
-                                      "\\unimathsetup{math-style=ISO,bold-style=ISO}"
-                                      "\\setmathfont[Language=Default]{Libertinus Math}")
-                                    "\n")
+ org-format-latex-header (mapconcat
+                          #'identity
+                          '("\\documentclass[11pt,preview]{standalone}"
+                            "[DEFAULT-PACKAGES]"
+                            "[PACKAGES]"
+                            "\\babelfont{rm}[Language=Default]{Libertinus Serif}"
+                            "\\babelfont{sf}[Language=Default]{Libertinus Sans}"
+                            "\\babelfont{tt}[Language=Default,Scale=MatchLowercase]{Latin Modern Mono}"
+                            "\\mathtoolsset{mathic}"
+                            "\\unimathsetup{math-style=ISO,bold-style=ISO}"
+                            "\\setmathfont[Language=Default]{Libertinus Math}")
+                          "\n")
  org-latex-default-figure-position ""
  org-latex-image-default-width "\\linewidth"
  org-latex-listings 'minted
@@ -867,8 +868,8 @@ will be used for this purpose."
 
 (d125q-customizeq
  show-paren-ring-bell-on-mismatch t
- show-paren-when-point-in-periphery t
- show-paren-when-point-inside-paren t
+ show-paren-when-point-in-periphery nil
+ show-paren-when-point-inside-paren nil
  show-paren-mode t)
 
 ;; ** Scroll bars
@@ -911,6 +912,54 @@ will be used for this purpose."
 (custom-set-faces
  '(fixed-pitch ((t (:inherit default))))
  '(fixed-pitch-serif ((t (:inherit default)))))
+
+(defun d125q-setup-fontsets ()
+  "Setup the personal custom fontsets."
+  (let ((fontset-name "fontset-custom")
+        (emoji-family "Noto Color Emoji")
+        (symbols-family "Noto Color Symbols 2"))
+    (set-fontset-font
+     fontset-name #x203C (font-spec :family emoji-family) nil)
+    (set-fontset-font
+     fontset-name #x2049 (font-spec :family emoji-family) nil)
+    (cl-loop
+     for (from to contains-symbols)
+     in '((#x2600 #x26FF) ; https://en.wikipedia.org/wiki/Miscellaneous_Symbols
+          (#x2700 #x27BF t) ; https://en.wikipedia.org/wiki/Dingbat#Dingbats_in_Unicode
+          (#x1F300 #x1F5FF) ; https://en.wikipedia.org/wiki/Miscellaneous_Symbols_and_Pictographs
+          (#x1F600 #x1F64F) ; https://en.wikipedia.org/wiki/Emoticons_(Unicode_block)
+          (#x1F680 #x1F6FF) ; https://en.wikipedia.org/wiki/Transport_and_Map_Symbols
+          (#x1F900 #x1F9FF) ; https://en.wikipedia.org/wiki/Supplemental_Symbols_and_Pictographs
+          (#x1FA70 #x1FAFF)) ; https://en.wikipedia.org/wiki/Symbols_and_Pictographs_Extended-A
+     for target = (cons from to)
+     do (set-fontset-font
+         fontset-name target (font-spec :family emoji-family) nil)
+     when contains-symbols
+     do (set-fontset-font
+         fontset-name target (font-spec :family symbols-family) nil 'append)
+     end)
+    (cl-loop
+     for (from to)
+     in '((#x4E00 #x9FFF) ; https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_(Unicode_block)
+          (#x3000 #x303F) ; https://en.wikipedia.org/wiki/CJK_Symbols_and_Punctuation
+          (#x3200 #x32FF) ; https://en.wikipedia.org/wiki/Enclosed_CJK_Letters_and_Months
+          (#xFF00 #xFFEF)) ; https://en.wikipedia.org/wiki/Halfwidth_and_Fullwidth_Forms_(Unicode_block)
+     for target = (cons from to)
+     do (set-fontset-font
+         fontset-name target (font-spec :family "Noto Sans Mono CJK SC") nil))
+    (cl-loop
+     for (from to)
+     in '((#x1100 #x11FF) ; https://en.wikipedia.org/wiki/Hangul_Jamo_(Unicode_block)
+          (#x3130 #x318F) ; https://en.wikipedia.org/wiki/Hangul_Compatibility_Jamo
+          (#xA960 #xA97F) ; https://en.wikipedia.org/wiki/Hangul_Jamo_Extended-A
+          (#xAC00 #xD7AF) ; https://en.wikipedia.org/wiki/Hangul_Syllables
+          (#xD7B0 #xD7FF)) ; https://en.wikipedia.org/wiki/Hangul_Jamo_Extended-B
+     for target = (cons from to)
+     do (set-fontset-font
+         fontset-name target (font-spec :family "Noto Sans Mono CJK KR") nil))))
+
+(add-hook 'window-setup-hook #'d125q-setup-fontsets)
+(add-hook 'server-after-make-frame-hook #'d125q-setup-fontsets)
 
 ;; * Postamble
 

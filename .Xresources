@@ -1,4 +1,6 @@
-Emacs.font: Iosevka Custom Condensed-15
+Emacs.Fontset-0: -*-Iosevka Custom-medium-r-condensed-*-*-150-*-*-m-*-fontset-custom
+
+Emacs.font: fontset-custom
 Emacs.paneFont: -*-terminus-*-r-*-*-15-*-*-*-*-*-*-*
 Emacs.selectionFont: -*-terminus-*-r-*-*-13-*-*-*-*-*-*-*
 
