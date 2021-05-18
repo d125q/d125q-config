@@ -691,35 +691,6 @@ function stow-libgit2 {
     stow -d $pkgdir -R $pkgname
 }
 
-## ** mongo-c-driver
-
-function clone-mongo-c-driver {
-    git clone -b master --depth 1 'git@github.com:mongodb/mongo-c-driver.git'
-}
-
-function update-mongo-c-driver {
-    git fetch --depth=1 --update-shallow origin
-    git reset --hard origin/master
-}
-
-function build-mongo-c-driver {
-    mkdir -p cmake-build
-    cd cmake-build
-    cmake -DCMAKE_INSTALL_PREFIX=$pkgprefix -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF ..
-    parallel-cmake-build .
-    cd -
-}
-
-function install-mongo-c-driver {
-    cd cmake-build
-    parallel-cmake-build . --target install
-    cd -
-}
-
-function stow-mongo-c-driver {
-    stow -d $pkgdir -R $pkgname
-}
-
 ## ** libsynctex
 
 function clone-libsynctex {
@@ -775,6 +746,35 @@ function install-libsynctex {
 }
 
 function stow-libsynctex {
+    stow -d $pkgdir -R $pkgname
+}
+
+## ** mongo-c-driver
+
+function clone-mongo-c-driver {
+    git clone -b master --depth 1 'git@github.com:mongodb/mongo-c-driver.git'
+}
+
+function update-mongo-c-driver {
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin/master
+}
+
+function build-mongo-c-driver {
+    mkdir -p cmake-build
+    cd cmake-build
+    cmake -DCMAKE_INSTALL_PREFIX=$pkgprefix -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF ..
+    parallel-cmake-build .
+    cd -
+}
+
+function install-mongo-c-driver {
+    cd cmake-build
+    parallel-cmake-build . --target install
+    cd -
+}
+
+function stow-mongo-c-driver {
     stow -d $pkgdir -R $pkgname
 }
 
