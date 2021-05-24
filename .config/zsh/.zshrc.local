@@ -94,6 +94,7 @@ fi
 
 ## * Completions for pip and pipenv
 if [[ -v commands[pyenv] ]] ; then
+    eval "$( ${commands[pyenv]} init - )"
     eval "$( ${commands[pyenv]} exec pip completion --zsh )"
     eval "$( ${commands[pyenv]} exec pipenv --completion )"
 fi

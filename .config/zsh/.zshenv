@@ -50,7 +50,7 @@ function setup_pyenv {
     ld_library_path+=( ${^pyenv_prefix}/lib )
     pkg_config_path+=( ${^pyenv_prefix}/lib/pkgconfig )
     unset PYENV_PREFIX pyenv_prefix
-    eval "$( pyenv init - )"
+    eval "$( pyenv init --path )"
     source $( pyenv which virtualenvwrapper.sh )
 }
 
