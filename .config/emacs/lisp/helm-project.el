@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210408113044
+;; Version: 20210526142450
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -93,28 +93,31 @@
     :initarg :project
     :initform nil
     :custom (cons symbol string)
-    :documentation "The current project for which buffers are being listed.")
+    :documentation "The project for which buffers are being listed.")
+   (buffer-list
+    :initform (lambda ()
+                (helm-aif (helm-get-attr 'project)
+                    (progn
+                      (let* ((buffer-filter
+                              (lambda (buffer)
+                                (equal it (with-current-buffer buffer (project-current)))))
+                             (visibles (helm-buffers-get-visible-buffers))
+                             (others (helm-buffer-list-1 visibles)))
+                        (funcall helm-buffer-list-reorder-fn
+                                 (cl-delete-if-not buffer-filter visibles)
+                                 (cl-delete-if-not buffer-filter others))))
+                  (user-error "Invalid state; `project' is nil"))))
    (init
     :initform (lambda ()
                 (helm-aif (project-current)
                     (progn
                       (helm-set-attr 'project it)
+                      (helm-buffers-list--init)
                       (helm-set-attr 'header-line
                                      (format "%s | %s"
                                              (project-root it)
-                                             (helm-get-attr 'persistent-help)))
-                      (helm-buffers-list--init))
-                  (user-error "Could not to retrieve current project"))))
-   (candidate-transformer
-    :initform (lambda (candidates)
-                (helm-aif (helm-get-attr 'project)
-                    (cl-loop
-                     for buffer in candidates
-                     when (equal it (with-current-buffer buffer (project-current)))
-                     collect buffer)
-                  (user-error "Invalid state; `project' is nil"))))
-   (keymap
-    :initform helm-buffer-map)
+                                             (helm-get-attr 'persistent-help))))
+                  (user-error "Could not retrieve the current project"))))
    (group
     :initform 'helm-project))
   :documentation "Source class for `helm-project-list-buffers'.")
@@ -123,9 +126,9 @@
   "Source for `helm-project-list-buffers'.")
 
 ;;;###autoload
-(defun helm-project-list-buffers (_arg)
+(defun helm-project-list-buffers ()
   "List buffers in the current project using Helm."
-  (interactive "P")
+  (interactive)
   (unless helm-project--lb-source
     (setq helm-project--lb-source (helm-make-source
                                       "Project buffers"
@@ -140,7 +143,8 @@
 
 ;;;###autoload
 (defun helm-project-grep (arg)
-  "Grep the current project using Helm."
+  "Grep the current project using Helm.
+When ARG is non-nil, ask for file types to search."
   (interactive "P")
   (helm-aif (project-current)
       (helm-grep-ag (expand-file-name (project-root it)) arg)
@@ -191,20 +195,22 @@ non-nil, the action is automatically defined.
  ("Magit status" magit-status)
  ("VC-Dir" vc-dir)
  ("Dired" dired)
- ("Find files" helm-project-find-files)
- ("List buffers" helm-project-list-buffers)
+ ("Find file" find-file)
+ ("Find files (Helm)" helm-find-files)
+ ("Find files (Helm) in project" helm-project-find-files)
+ ("List buffers in project" helm-project-list-buffers)
  ("Browse project" helm-browse-project)
- ("Shell" project-shell)
- ("Eshell" project-eshell)
+ ("Start shell" project-shell)
+ ("Start Eshell" project-eshell)
+ ("Remove from project list" remove-from-project-list :skip-action-def t)
  ("Find regexp" project-find-regexp)
+ ("Run `rg-project'" rg-project)
+ ("Run `deadgrep'" deadgrep)
  ("Run `grep'" grep)
  ("Run `lgrep'" lgrep)
  ("Run `rgrep'" rgrep)
  ("Run `zrgrep'" zrgrep)
- ("Run `vc-git-grep'" vc-git-grep)
- ("Run `rg-project'" rg-project)
- ("Run `deadgrep'" deadgrep)
- ("Remove from project list" remove-from-project-list :skip-action-def t))
+ ("Run `vc-git-grep'" vc-git-grep))
 
 ;; ** :action-transformer
 
@@ -240,6 +246,7 @@ run `vc-dir'."
 (put 'helm-project--sp-run-remove-from-project-list 'helm-only t)
 
 (defmacro helm-project--sp-define-keymap (&rest spec)
+  ;; checkdoc-params: (spec)
   "Define the keymap for `helm-project-switch-project'.
 Bind each KEY to a runner for its CMD.  Unless SKIP-RUNNER-DEF is
 non-nil, the runner is defined automatically.
@@ -274,22 +281,24 @@ non-nil, the runner is defined automatically.
 
 (helm-project--sp-define-keymap
  ("C-x g" magit-status)
- ("C-x v d" vc-dir)
+ ("C-x v" vc-dir)
  ("C-x d" dired)
- ("C-x C-f" helm-project-find-files)
- ("C-x b" helm-project-list-buffers)
- ("C-c C-b" helm-browse-project)
+ ("C-x C-f" find-file)
+ ("C-c f" helm-find-files)
+ ("C-c b" helm-browse-project)
+ ("C-c C-f" helm-project-find-files)
+ ("C-c C-b" helm-project-list-buffers)
  ("C-c C-s" project-shell)
  ("C-c C-e" project-eshell)
- ("C-c C-f" project-find-regexp)
  ("C-c C-d" remove-from-project-list :skip-runner-def t)
+ ("M-s f" project-find-regexp)
+ ("M-s r" rg-project)
+ ("M-s d" deadgrep)
  ("M-s g g" grep)
  ("M-s g l" lgrep)
  ("M-s g r" rgrep)
  ("M-s g z" zrgrep)
- ("M-s g v" vc-git-grep)
- ("M-s r" rg-project)
- ("M-s d" deadgrep))
+ ("M-s g v" vc-git-grep))
 
 ;; ** Main function with associated data
 
