@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210408112851
+;; Version: 20210526142227
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -21,6 +21,7 @@
 
 ;;;###autoload
 (defmacro d125q-lambda (&rest form)
+  ;; checkdoc-params: (form)
   "Return an anonymous function.
 Like normal `lambda', except ARGLIST allows full Common Lisp
 conventions.  See the Info node `(cl)Argument Lists' for more
@@ -80,6 +81,7 @@ details.
 
 ;;;###autoload
 (cl-defmacro d125q-customizeq (&rest spec &aux args sym exp)
+  ;; checkdoc-params: (spec args sym exp)
   "For each SYM, store EXP as its saved value.
 
 \(fn [SYM EXP]...)"
@@ -121,6 +123,7 @@ details.
 
 ;;;###autoload
 (cl-defmacro d125q-bind-keys ((&key map prefix) &rest spec)
+  ;; checkdoc-params: (map prefix spec)
   "Bind each KEY to its CMD.
 
 \(fn (&key MAP PREFIX) [KEY CMD]...)"
@@ -153,7 +156,12 @@ details.
                                               &key map persist-by-default)
                                          &rest spec)
   "Define a transient keymap with SYM and ACTIVATION-KEY.
-In it, bind each KEY to its CMD.
+In it, bind each KEY to its CMD.  If PERSIST is non-nil or it is
+missing and PERSIST-BY-DEFAULT is non-nil, mark the binding as
+persistent.  In other words, do not deactivate the transient
+keymap after the binding has been used.
+
+SPEC consists of [KEY CMD &key PERSIST]...
 
 \(fn (NAME ACTIVATION-KEY &key MAP PERSIST-BY-DEFAULT) [KEY CMD &key PERSIST]...)"
   (declare (indent 1)
