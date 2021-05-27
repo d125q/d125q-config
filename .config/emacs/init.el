@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210511093814
+;; Version: 20210527152436
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -86,6 +86,7 @@
 
 (d125q-customizeq
  magit-define-global-key-bindings t
+ magit-bind-magit-project-status nil
  magit-completing-read-function 'magit-ido-completing-read)
 
 (require 'magit)
@@ -120,7 +121,6 @@
 
   (defun d125q-helm-ff-magit-status (candidate)
     "Open the Magit status from Helm FF with an action.
-
 If CANDIDATE is a directory, then it will be used as DIRECTORY to
 determine the toplevel; otherwise, `helm-ff-default-directory'
 will be used for this purpose."
@@ -184,28 +184,24 @@ will be used for this purpose."
 ;; * Project
 
 (d125q-bind-keys (:map project-prefix-map)
-  "m" magit-project-status)
-
-(d125q-bind-keys (:map project-prefix-map)
-  "<f5>" helm-project-find-files
-  "<f6>" helm-project-list-buffers
-  "<f7>" helm-project-grep
-  "<f8>" rg-project
-  "<f9>" deadgrep)
+  "RET" helm-browse-project
+  "m" magit-project-status
+  "o" helm-project-find-files
+  "l" helm-project-list-buffers
+  "R" rg-project
+  "D" deadgrep)
 
 (d125q-customizeq
- project-switch-commands '((project-find-file "Find file")
-                           (project-find-regexp "Find regexp")
+ project-switch-commands '((helm-browse-project "Browse project")
+                           (project-find-file "Find file")
                            (project-dired "Dired")
                            (project-vc-dir "VC-Dir")
                            (magit-project-status "Magit")
-                           (project-shell "Shell")
-                           (project-eshell "Eshell")
-                           (helm-project-find-files "Find files (Helm)")
-                           (helm-project-list-buffers "List buffers (Helm)")
-                           (helm-project-grep "grep (Helm)")
+                           (project-find-regexp "Find regexp")
                            (rg-project "ripgrep")
-                           (deadgrep "deadgrep")))
+                           (deadgrep "deadgrep")
+                           (project-shell "Shell")
+                           (project-eshell "Eshell")))
 
 ;; * Files
 
@@ -306,7 +302,7 @@ will be used for this purpose."
 
 ;; * Helpful
 
-(d125q-bind-keys (:prefix "s-h")
+(d125q-bind-keys (:prefix "<f5>")
   "c" helpful-callable
   "f" helpful-function
   "p" helpful-at-point
@@ -438,7 +434,7 @@ will be used for this purpose."
  custom-unlispify-tag-names nil
  custom-variable-default-form 'lisp)
 
-(d125q-bind-keys (:prefix "s-c")
+(d125q-bind-keys (:prefix "<f6>")
   "a" customize-apropos
   "f" customize-face
   "4 f" customize-face-other-window
@@ -580,7 +576,7 @@ will be used for this purpose."
  python-indent-guess-indent-offset-verbose nil
  python-shell-prompt-detect-failure-warning nil)
 
-(d125q-bind-keys (:prefix "s-v")
+(d125q-bind-keys (:prefix "<f7>")
   "a" pyvenv-activate
   "w" pyvenv-workon
   "d" pyvenv-deactivate

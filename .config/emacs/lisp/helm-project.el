@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210527081901
+;; Version: 20210527152109
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -285,13 +285,13 @@ non-nil, the runner is defined automatically.
  ("C-x v" vc-dir)
  ("C-x d" dired)
  ("C-x C-f" find-file)
- ("C-c C-p" helm-browse-project)
- ("C-c C-f" helm-find-files)
- ("C-c C-o" helm-project-find-files)
- ("C-c C-b" helm-project-list-buffers)
- ("C-c C-d" remove-from-project-list :skip-runner-def t)
- ("C-c C-e" project-eshell)
- ("C-c C-s" project-shell)
+ ("C-c RET" helm-browse-project)
+ ("C-c f" helm-find-files)
+ ("C-c o" helm-project-find-files)
+ ("C-c l" helm-project-list-buffers)
+ ("C-c d" remove-from-project-list :skip-runner-def t)
+ ("C-c e" project-eshell)
+ ("C-c s" project-shell)
  ("M-s f" project-find-regexp)
  ("M-s g g" grep)
  ("M-s g l" lgrep)
