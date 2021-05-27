@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210526142450
+;; Version: 20210527081901
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -163,6 +163,7 @@ When ARG is non-nil, ask for file types to search."
     (helm-force-update)))
 
 (defmacro helm-project--sp-define-actions (&rest spec)
+  ;; checkdoc-params: (spec)
   "Define the actions for `helm-project-switch-project'.
 Give each action a NAME and a CMD.  Unless SKIP-ACTION-DEF is
 non-nil, the action is automatically defined.
@@ -196,21 +197,21 @@ non-nil, the action is automatically defined.
  ("VC-Dir" vc-dir)
  ("Dired" dired)
  ("Find file" find-file)
+ ("Browse project" helm-browse-project)
  ("Find files (Helm)" helm-find-files)
  ("Find files (Helm) in project" helm-project-find-files)
  ("List buffers in project" helm-project-list-buffers)
- ("Browse project" helm-browse-project)
+ ("Remove from project list" remove-from-project-list :skip-action-def t)
  ("Start shell" project-shell)
  ("Start Eshell" project-eshell)
- ("Remove from project list" remove-from-project-list :skip-action-def t)
  ("Find regexp" project-find-regexp)
- ("Run `rg-project'" rg-project)
- ("Run `deadgrep'" deadgrep)
  ("Run `grep'" grep)
  ("Run `lgrep'" lgrep)
  ("Run `rgrep'" rgrep)
  ("Run `zrgrep'" zrgrep)
- ("Run `vc-git-grep'" vc-git-grep))
+ ("Run `vc-git-grep'" vc-git-grep)
+ ("Run `rg-project'" rg-project)
+ ("Run `deadgrep'" deadgrep))
 
 ;; ** :action-transformer
 
@@ -284,21 +285,21 @@ non-nil, the runner is defined automatically.
  ("C-x v" vc-dir)
  ("C-x d" dired)
  ("C-x C-f" find-file)
- ("C-c f" helm-find-files)
- ("C-c b" helm-browse-project)
- ("C-c C-f" helm-project-find-files)
+ ("C-c C-p" helm-browse-project)
+ ("C-c C-f" helm-find-files)
+ ("C-c C-o" helm-project-find-files)
  ("C-c C-b" helm-project-list-buffers)
- ("C-c C-s" project-shell)
- ("C-c C-e" project-eshell)
  ("C-c C-d" remove-from-project-list :skip-runner-def t)
+ ("C-c C-e" project-eshell)
+ ("C-c C-s" project-shell)
  ("M-s f" project-find-regexp)
- ("M-s r" rg-project)
- ("M-s d" deadgrep)
  ("M-s g g" grep)
  ("M-s g l" lgrep)
  ("M-s g r" rgrep)
  ("M-s g z" zrgrep)
- ("M-s g v" vc-git-grep))
+ ("M-s g v" vc-git-grep)
+ ("M-s r" rg-project)
+ ("M-s d" deadgrep))
 
 ;; ** Main function with associated data
 
