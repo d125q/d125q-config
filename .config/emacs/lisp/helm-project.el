@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210527152109
+;; Version: 20210617124828
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -74,9 +74,9 @@
   "Source for `helm-project-find-files'.")
 
 ;;;###autoload
-(defun helm-project-find-files (_arg)
+(defun helm-project-find-files ()
   "Find files in the current project using Helm."
-  (interactive "P")
+  (interactive)
   (unless helm-project--ff-source
     (setq helm-project--ff-source (helm-make-source
                                       "Find files in project"
@@ -285,21 +285,22 @@ non-nil, the runner is defined automatically.
  ("C-x v" vc-dir)
  ("C-x d" dired)
  ("C-x C-f" find-file)
- ("C-c RET" helm-browse-project)
- ("C-c f" helm-find-files)
- ("C-c o" helm-project-find-files)
- ("C-c l" helm-project-list-buffers)
+ ("H-f" helm-find-files)
+ ("H-<return>" helm-browse-project)
+ ("s-[" deadgrep)
+ ("s-]" rg-project)
+ ("C-c f" helm-project-find-files)
+ ("C-c b" helm-project-list-buffers)
+ ("C-c g" helm-project-grep)
  ("C-c d" remove-from-project-list :skip-runner-def t)
- ("C-c e" project-eshell)
  ("C-c s" project-shell)
- ("M-s f" project-find-regexp)
- ("M-s g g" grep)
- ("M-s g l" lgrep)
- ("M-s g r" rgrep)
- ("M-s g z" zrgrep)
- ("M-s g v" vc-git-grep)
- ("M-s r" rg-project)
- ("M-s d" deadgrep))
+ ("C-c e" project-eshell)
+ ("C-c c" project-compile)
+ ("M-s g" grep)
+ ("M-s l" lgrep)
+ ("M-s r" rgrep)
+ ("M-s z" zrgrep)
+ ("M-s v" vc-git-grep))
 
 ;; ** Main function with associated data
 

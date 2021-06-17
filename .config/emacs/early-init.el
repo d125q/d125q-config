@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210511123157
+;; Version: 20210604094821
 ;; Keywords: convenience
 
 ;;; Commentary:

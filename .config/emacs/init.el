@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210527152436
+;; Version: 20210617124658
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -92,15 +92,47 @@
 (require 'magit)
 (require 'magit-extras)
 
-;; Ido has already been loaded
-(d125q-bind-keys (:map ido-common-completion-map)
-  "C-x g" ido-enter-magit-status)
+(with-eval-after-load 'ido
+  (defvar ido-common-completion-map)
+  (d125q-bind-keys (:map ido-common-completion-map)
+    "C-x g" ido-enter-magit-status))
+
+;; * Searching
+
+;; ** Isearch
+
+(d125q-customizeq
+ search-ring-max 128
+ regexp-search-ring-max 128
+ isearch-lazy-count t
+ isearch-lazy-highlight t)
+
+;; ** `grep' and friends
+
+(d125q-bind-keys (:map search-map)
+  "g" grep
+  "l" lgrep
+  "r" rgrep
+  "z" zrgrep
+  "v" vc-git-grep
+  "f" grep-find
+  "/" locate)
+
+(d125q-bind-keys ()
+  "s-[" deadgrep)
+
+(d125q-customizeq
+ rg-keymap-prefix (kbd "s-]")
+ rg-use-transient-menu t)
+
+(rg-enable-default-bindings)
 
 ;; * Helm
 
 (d125q-customizeq
  helm-display-function #'helm-default-display-buffer
  helm-command-prefix-key nil
+ helm-ff-lynx-style-map nil
  helm-ff-DEL-up-one-level-maybe t
  helm-ff-display-image-native t
  helm-buffer-max-length 40
@@ -140,66 +172,73 @@ will be used for this purpose."
 
   (push '("Open the Magit status" . d125q-helm-ff-magit-status)
         (cdr (last helm-find-files-actions)))
-
   (d125q-bind-keys (:map helm-find-files-map)
     "C-x g" d125q-helm-ff-run-magit-status))
 
 (d125q-bind-keys ()
-  "C-c c" helm-resume
-  "C-c x" helm-M-x
-  "C-c f" helm-find-files
-  "C-c F" helm-recentf
-  "C-c y" helm-show-kill-ring
-  "C-c b" helm-buffers-list
-  "C-c B" helm-filtered-bookmarks
-  "C-c i" helm-imenu
-  "C-c I" helm-imenu-in-all-buffers
-  "C-c s" helm-semantic
-  "C-c r" helm-register
-  "C-c m" helm-mini
-  "C-c M" helm-multi-files
-  "C-c p" helm-project-switch-project)
+  "H-c" helm-resume
+  "H-x" helm-M-x
+  "H-y" helm-show-kill-ring
+  "H-f" helm-find-files
+  "H-F" helm-multi-files
+  "H-b" helm-buffers-list
+  "H-B" helm-filtered-bookmarks
+  "H-i" helm-imenu
+  "H-I" helm-imenu-in-all-buffers
+  "H-r" helm-register
+  "H-R" helm-recentf
+  "H-m" helm-mini
+  "H-s" helm-semantic
+  "H-<return>" helm-browse-project
+  "H-SPC" helm-all-mark-rings
+  "H-/" helm-dabbrev
+  "H-:" helm-eval-expression-with-eldoc)
 
-(d125q-bind-keys ()
-  "s-SPC" helm-all-mark-rings
-  "s-:" helm-eval-expression-with-eldoc
-  "s-/" helm-dabbrev)
+(with-eval-after-load 'outline
+  (unless (load "helm-outline-loaddefs" 'noerror 'nomessage)
+    (require 'helm-outline))
+  (defvar outline-mode-map)
+  (defvar outline-minor-mode-map)
+  (d125q-bind-keys (:map outline-mode-map)
+    "H-o" helm-outline)
+  (d125q-bind-keys (:map outline-minor-mode-map)
+    "H-o" helm-outline))
 
-(d125q-bind-keys (:prefix "C-c h")
-  "a" helm-apropos
-  "g" helm-info-gnus
-  "i" helm-info-at-point
-  "m" helm-man-woman
-  "r" helm-info-emacs)
+(d125q-bind-keys (:prefix "H-p")
+  "p" helm-project-switch-project
+  "f" helm-project-find-files
+  "b" helm-project-list-buffers
+  "g" helm-project-grep)
 
-(d125q-bind-keys (:prefix "C-c s")
-  "e" helm-etags-select
-  "f" helm-find
-  "g" helm-do-grep-ag
-  "G" helm-grep-do-git-grep
-  "l" helm-locate
+(d125q-bind-keys (:prefix "H-s")
   "o" helm-occur
+  "g" helm-do-grep-ag
+  "v" helm-grep-do-git-grep
+  "f" helm-find
+  "/" helm-locate
+  "e" helm-etags-select
   "r" helm-regexp)
+
+(d125q-bind-keys (:prefix "H-h")
+  "a" helm-apropos
+  "m" helm-man-woman
+  "i" helm-info
+  "r" helm-info-emacs
+  "g" helm-info-gnus)
 
 ;; * Project
 
 (d125q-bind-keys (:map project-prefix-map)
-  "RET" helm-browse-project
   "m" magit-project-status
-  "o" helm-project-find-files
-  "l" helm-project-list-buffers
-  "R" rg-project
-  "D" deadgrep)
+  "RET" helm-browse-project)
 
 (d125q-customizeq
- project-switch-commands '((helm-browse-project "Browse project")
+ project-switch-commands '((helm-browse-project "Browse")
                            (project-find-file "Find file")
+                           (magit-project-status "Magit")
                            (project-dired "Dired")
                            (project-vc-dir "VC-Dir")
-                           (magit-project-status "Magit")
                            (project-find-regexp "Find regexp")
-                           (rg-project "ripgrep")
-                           (deadgrep "deadgrep")
                            (project-shell "Shell")
                            (project-eshell "Eshell")))
 
@@ -302,10 +341,12 @@ will be used for this purpose."
 
 ;; * Helpful
 
-(d125q-bind-keys (:prefix "<f5>")
+(d125q-bind-keys ()
+  "s-." helpful-at-point)
+
+(d125q-bind-keys (:prefix "s-h")
   "c" helpful-callable
   "f" helpful-function
-  "p" helpful-at-point
   "i" helpful-command
   "k" helpful-key
   "m" helpful-macro
@@ -325,34 +366,6 @@ will be used for this purpose."
 
 (d125q-bind-keys ()
   "s-k" kill-whole-line)
-
-;; ** Isearch
-
-(d125q-customizeq
- search-ring-max 128
- regexp-search-ring-max 128
- isearch-lazy-count t
- isearch-lazy-highlight t)
-
-;; ** `grep' and friends
-
-(d125q-bind-keys (:map search-map :prefix "g")
-  "g" grep
-  "v" vc-git-grep
-  "f" grep-find
-  "l" lgrep
-  "r" rgrep
-  "z" zrgrep)
-
-(d125q-customizeq
- rg-keymap-prefix (kbd "M-s r")
- rg-use-transient-menu t)
-
-(rg-enable-default-bindings)
-
-(d125q-bind-keys (:map search-map)
-  "d" deadgrep
-  "l" locate)
 
 ;; ** Jumping to things
 
@@ -421,7 +434,7 @@ will be used for this purpose."
  speedbar-vebosity-level 0)
 
 (d125q-bind-keys ()
-  "<f9>" speedbar)
+  "<f5>" speedbar)
 
 ;; * The Customization interface
 
@@ -558,7 +571,7 @@ will be used for this purpose."
 (defun d125q-emacs-lisp-setup-outline ()
   "Setup outlines for Emacs Lisp code."
   (declare-function outline-hide-sublevels "outline")
-  (setq-local outline-regexp ";; \\(\\*+\\) .*$"
+  (setq-local outline-regexp ";; \\(\\*+\\)"
               outline-level #'d125q-emacs-lisp-outline-level)
   (outline-minor-mode)
   (outline-hide-sublevels 1))
@@ -577,8 +590,8 @@ will be used for this purpose."
  python-shell-prompt-detect-failure-warning nil)
 
 (d125q-bind-keys (:prefix "<f7>")
-  "a" pyvenv-activate
   "w" pyvenv-workon
+  "a" pyvenv-activate
   "d" pyvenv-deactivate
   "c" pyvenv-create)
 
@@ -647,7 +660,7 @@ will be used for this purpose."
 (defun d125q-sh-setup-outline ()
   "Setup outlines for Shell scripts."
   (declare-function outline-hide-sublevels "outline")
-  (setq-local outline-regexp "## \\(\\*+\\).*$"
+  (setq-local outline-regexp "## \\(\\*+\\)"
               outline-level #'d125q-sh-outline-level)
   (outline-minor-mode)
   (outline-hide-sublevels 1))

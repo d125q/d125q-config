@@ -40,13 +40,15 @@ $ stow d125q-config
     default key sequences.  It is primarily meant for operations where one
     already has a good overview of things and can get away with using the
     minibuffer.
-  + For more elaborate scenarios, [Helm][helm-repo] is configured and bound to
-    the usual <kbd>C-c letter</kbd> user-reserved key sequences.  (Where
-    <kbd>letter</kbd> is either upper or lower case.)  For example, `helm-M-x`
-    is bound to <kbd>C-c x</kbd>, `helm-find-files` to <kbd>C-c f</kbd>, and
-    `helm-buffers-list` to <kbd>C-c b</kbd>.
-  + Other custom key bindings use either <kbd>F5</kbd> through <kbd>F9</kbd>
-    without any modifier keys or the <kbd>Super</kbd> modifier key.
+  + For more elaborate scenarios, [Helm][helm-repo] is configured and uses the
+    <kbd>Hyper</kbd> modifier key.  (And <kbd>Caps Lock</kbd> is set to act as
+    <kbd>Hyper</kbd>.)  For example, `helm-M-x` is bound to <kbd>H-x</kbd>,
+    `helm-find-files` to <kbd>H-f</kbd>, and `helm-buffers-list` to
+    <kbd>H-b</kbd>.
+  + Other custom key bindings use either the <kbd>Super</kbd> modified key,
+    <kbd>F5</kbd> through <kbd>F9</kbd> without any modifier keys, or the usual
+    <kbd>C-c letter</kbd> user-reserved key sequences.  (Where <kbd>letter</kbd>
+    is either upper or lower case.)
   + Key sequences used by the window manager should not be touched by GNU Emacs
     and vice versa.
 - Code should be autoloaded as much as possible.
