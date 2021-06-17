@@ -6,7 +6,7 @@ EMACSOPT = --batch --no-site-file --no-site-lisp
 emacs = EMACSLOADPATH= '$(EMACS)' $(EMACSOPT)
 
 .PHONY: autoloads
-autoloads: d125q-macs.el d125q-lib.el helm-project.el
+autoloads: d125q-macs.el d125q-lib.el helm-project.el helm-outline.el
 	$(emacs) -l autoload \
 	--eval '(setq autoload-ensure-writable t)' \
 	--eval '(setq generated-autoload-file "d125q-loaddefs.el")' \

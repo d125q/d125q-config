@@ -9,6 +9,7 @@
 /.config/emacs/lisp/d125q-loaddefs.el
 /.config/emacs/lisp/d125q-macs-loaddefs.el
 /.config/emacs/lisp/helm-project-loaddefs.el
+/.config/emacs/lisp/helm-outline-loaddefs.el
 /.authinfo
 /.authinfo.gpg
 /tnsnames.ora
