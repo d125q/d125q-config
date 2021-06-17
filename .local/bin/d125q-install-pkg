@@ -1,0 +1,912 @@
+#!/usr/bin/env zsh
+
+## * Usage
+
+read -r -d '' usage <<EOF
+Usage: $0 [OPTION]... PATTERN...
+Install packages whose names match PATTERN from their local
+repositories.
+Options:
+    -h, -help          display this help and exit
+    -x, -xtrace        enable tracing
+    -j N, -parallel N  use up to N concurrent jobs when building
+                       and installing packages
+    -noupdate          do not update any source code from the remote
+                       repositories
+    -nobuild           do not build any packages
+    -nostow            do not stow any installed files
+    -pkgstowdir DIR    stow directory to install packages to
+                           (default: \$HOME/.local/stow)
+    -cfgstowdir DIR    stow directory to install configuration files to
+                           (default \$HOME/stow)
+    -srcrootdir DIR    directory to download source code to
+                           (default: \$HOME/.local/src)
+    -patchrootdir DIR  directory to include patches from
+                           (default: \$HOME/.local/patches)
+    -altdir DIR        directory containing alternatives
+                           (default: \$HOME/Alternatives)
+    -admindir DIR      directory containing administrative information
+                           (default: \$HOME/.var/lib/dpkg)
+EOF
+
+## * Options
+
+set -euo pipefail
+set -o extendedglob
+typeset -A opts
+zparseopts -D -E -F -M -A opts -                \
+           h help=h x xtrace=x j: parallel:=j   \
+           noupdate nobuild nostow              \
+           pkgstowdir: cfgstowdir:              \
+           srcrootdir: patchrootdir:            \
+           altdir: admindir:
+
+if [[ -v opts[-h] ]] ; then
+    printf '%s\n' $usage
+    exit 0
+fi
+
+if [[ -v opts[-x] ]] ; then
+    set -x
+fi
+
+readonly pkgstowdir=${opts[-pkgstowdir]:-$HOME/.local/stow}             \
+         cfgstowdir=${opts[-cfgstowdir]:-$HOME/stow}                    \
+         srcrootdir=${opts[-srcrootdir]:-$HOME/.local/src}              \
+         patchrootdir=${opts[-patchrootdir]:-$HOME/.local/patches}      \
+         altdir=${opts[-altdir]:-$HOME/Alternatives}                    \
+         admindir=${opts[-admindir]:-$HOME/.var/lib/dpkg}
+readonly prefix=$pkgstowdir/..
+readonly bindir=$prefix/bin                     \
+         datadir=$prefix/share
+readonly mandir=$datadir/man                    \
+         infodir=$datadir/info                  \
+         applicationsdir=$datadir/applications  \
+         iconsdir=$datadir/icons/hicolor
+
+## * List of packages
+
+typeset -Ar pkgs=(
+    DancingScript git
+    Iosevka git
+    R svn
+    alacritty git
+    check git
+    cppcheck git
+    ctags git
+    emacs git
+    fontforge git
+    fontship git
+    girara git
+    git git
+    grml-etc-core git
+    liberation-fonts git
+    libertinus git
+    libgit2 git
+    libsynctex rsync
+    mongo-c-driver git
+    nano git
+    ncurses git
+    noto-cjk git
+    noto-emoji git
+    noto-fonts git
+    otfcc git
+    password-store git
+    polybar git
+    premake5 git
+    pyenv git
+    rbenv git
+    rofi git
+    stow git
+    tmux git
+    vim git
+    zathura git
+    zathura-pdf-poppler git
+    zsh git
+)
+
+typeset -Ar pkginfopats=(
+    R '*.info*.gz'
+    check '*.info'
+    nano '*.info'
+    emacs '*.info.gz'
+    zsh 'zsh.info*'
+)
+
+function pkglogger {
+    for msg in $@ ; do
+        logger -s "[$pkgname] $msg"
+    done
+}
+
+## * Wrappers around build tools
+
+function make {
+    if [[ -v opts[-j] ]] ; then
+        command make -j${opts[-j]} "$@"
+    else
+        command make "$@"
+    fi
+}
+
+function cmake-build {
+    if [[ $# -lt 1 ]] ; then
+        >&2 printf '%s\n' "Usage: $0 DIR [OPTION]..."
+        return 2
+    fi
+    local -r dir=$1
+    local -ar rest=( ${@:2} )
+    if [[ -v opts[-j] ]] ; then
+        command cmake --build $dir -j${opts[-j]} "${rest[@]}"
+    else
+        command cmake --build $dir "${rest[@]}"
+    fi
+}
+
+function ninja {
+    if [[ -v opts[-j] ]] ; then
+        command ninja -j${opts[-j]} "$@"
+    else
+        command ninja "$@"
+    fi
+}
+
+## * Function to stow installed files
+
+function generic_stow {
+    local -i hasinfopats=0
+    if [[ -f $pkginfodir/dir ]] ; then
+        if [[ -v pkginfopats[$pkgname] ]] ; then
+            local -r relpath=$( realpath --relative-to=$pkgdir $pkginfodir/dir )
+            pkglogger "Found Info directory file, ignoring $relpath"
+            printf '^/%s$\n' $relpath >$pkgdir/.stow-local-ignore
+            hasinfopats=1
+        else
+            local -r relpath=$( realpath --relative-to=$pkgdir $pkginfodir )
+            pkglogger "Found Info directory file but no patterns, ignoring all of $relpath"
+            printf '^/%s$\n' $relpath >$pkgdir/.stow-local-ignore
+        fi
+    fi
+    mkdir -p $pkgdir
+    mkdir -p $cfgdir
+    stow -d $pkgstowdir -R $pkgname
+    stow -d $cfgstowdir -R $pkgname
+    if (( hasinfopats )) ; then
+        pkglogger "Installing Info files"
+        for pkginfofile in $pkginfodir/${~pkginfopats[$pkgname]} ; do
+            install-info $pkginfofile $infodir/dir
+        done
+    fi
+}
+
+## * Git packages
+
+typeset -Ar pkgurls_git=(
+    DancingScript 'git@github.com:impallari/DancingScript.git'
+    Iosevka 'git@github.com:be5invis/Iosevka.git'
+    alacritty 'git@github.com:alacritty/alacritty.git'
+    check 'git@github.com:libcheck/check.git'
+    cppcheck 'git@github.com:danmar/cppcheck.git'
+    ctags 'git@github.com:universal-ctags/ctags.git'
+    emacs 'https://git.savannah.gnu.org/git/emacs.git'
+    fontforge 'git@github.com:fontforge/fontforge.git'
+    fontship 'git@github.com:theleagueof/fontship.git'
+    girara 'https://git.pwmt.org/pwmt/girara.git'
+    git 'git@github.com:git/git.git'
+    grml-etc-core 'git://git.grml.org/grml-etc-core.git'
+    liberation-fonts 'git@github.com:liberationfonts/liberation-fonts.git'
+    libertinus 'git@github.com:alerque/libertinus.git'
+    libgit2 'git@github.com:libgit2/libgit2.git'
+    mongo-c-driver 'git@github.com:mongodb/mongo-c-driver.git'
+    nano 'https://git.savannah.gnu.org/git/nano.git'
+    ncurses 'git@github.com:mirror/ncurses.git'
+    noto-cjk 'git@github.com:googlefonts/noto-cjk.git'
+    noto-emoji 'git@github.com:googlefonts/noto-emoji.git'
+    noto-fonts 'git@github.com:googlefonts/noto-fonts.git'
+    otfcc 'git@github.com:caryll/otfcc.git'
+    password-store 'git@github.com:zx2c4/password-store.git'
+    polybar 'git@github.com:polybar/polybar.git'
+    premake5 'git@github.com:premake/premake-core.git'
+    pyenv 'git@github.com:pyenv/pyenv.git'
+    rofi 'git@github.com:davatorium/rofi.git'
+    stow 'https://git.savannah.gnu.org/git/stow.git'
+    tmux 'git@github.com:tmux/tmux.git'
+    vim 'git@github.com:vim/vim.git'
+    zathura 'https://git.pwmt.org/pwmt/zathura.git'
+    zathura-pdf-poppler 'https://git.pwmt.org/pwmt/zathura-pdf-poppler.git'
+    zsh 'git://git.code.sf.net/p/zsh/code'
+)
+
+## ** Function to download (clone) a Git package
+
+function generic_download_git {
+    git clone --depth 1 $pkgurl $pkgname
+}
+
+## ** Function to update (fetch and reset) a Git package
+
+function generic_update_git {
+    git fetch --depth=1 --update-shallow origin
+    git reset --hard origin
+}
+
+## ** Package-specific functions
+
+## *** Iosevka
+
+function build_Iosevka {
+    cat <<'EOF' >private-build-plans.toml
+[buildPlans.iosevka-custom]
+family      = "Iosevka Custom" # Font menu family name
+spacing     = "fixed"          # Optional; Values: `normal`, `term`, `fontconfig-mono`, or `fixed`
+serifs      = "slab"           # Optional; Values: `sans` or `slab`
+digit-form  = "lining"         # Optional; Values `lining` or `old-style`
+no-ligation = true
+
+[buildPlans.iosevka-custom.weights.light]
+shape = 300
+menu  = 300
+css   = 300
+
+[buildPlans.iosevka-custom.weights.regular]
+shape = 500
+menu  = 400
+css   = 400
+
+[buildPlans.iosevka-custom.weights.bold]
+shape = 700
+menu  = 700
+css   = 700
+
+[buildPlans.iosevka-custom.widths.condensed]
+shape = 434
+menu  = 3
+css   = "condensed"
+
+[buildPlans.iosevka-custom.widths.normal]
+shape = 500
+menu  = 5
+css   = "normal"
+
+[buildPlans.iosevka-custom.widths.extended]
+shape = 576
+menu  = 7
+css   = "extended"
+EOF
+    npm install
+    npm run build -- ttf::iosevka-custom
+}
+
+function install_Iosevka {
+    local -r srcdir=dist/iosevka-custom/ttf
+    local -r tgtdir=$pkgfontsdir/$pkgname
+    install -m 644 -D -t $tgtdir $srcdir/*.ttf
+}
+
+## *** Check
+
+function build_check {
+    autoreconf -iv
+    ./configure --prefix=$pkgdir
+}
+
+function install_check {
+    make install
+}
+
+## *** Cppcheck
+
+function build_cppcheck {
+    cmake -S . -B build                         \
+          -DCMAKE_INSTALL_PREFIX=$pkgdir        \
+          -DHAVE_RULES=ON                       \
+          -DUSE_MATCHCOMPILER=ON                \
+          ..
+    cmake-build build
+}
+
+function install_cppcheck {
+    cmake-build build --target install
+    cd htmlreport
+    python setup.py install
+    cd -
+}
+
+## *** Universal Ctags
+
+function build_ctags {
+    ./autogen.sh
+    ./configure --prefix=$pkgdir
+    make
+}
+
+function install_ctags {
+    make install
+}
+
+## *** GNU Emacs
+
+function build_emacs {
+    ./autogen.sh autoconf
+    ./autogen.sh git
+    CC='gcc-10' CXX='g++-10'                    \
+      ./configure --prefix=$pkgdir              \
+                  --with-x                      \
+                  --with-x-toolkit=lucid        \
+                  --with-mailutils              \
+                  --with-imagemagick            \
+                  --with-json                   \
+                  --without-gsettings           \
+                  --without-gconf               \
+                  --with-native-compilation
+    make bootstrap
+    # running make docs with multiple jobs is prone to deadlocks
+    # TODO: figure out how to reproduce and report to mailing list
+    make -j1 docs
+}
+
+function install_emacs {
+    make systemdunitdir=$HOME/.config/systemd/user install
+    mv $pkgbindir/ctags $pkgbindir/ctags.emacs
+    mv $pkgmandir/man1/ctags.1.gz $pkgmandir/man1/ctags.emacs.1.gz
+}
+
+## *** FontForge
+
+function build_fontforge {
+    if whence -w pyenv >/dev/null ; then
+        local -TU PYENV_PREFIX pyenv_prefix
+        PYENV_PREFIX=$( pyenv prefix )
+        cmake -S . -B build -GNinja                     \
+              -DCMAKE_PREFIX_PATH=${(j:;:)pyenv_prefix} \
+              -DCMAKE_INSTALL_PREFIX=$pkgdir            \
+              ..
+    else
+        cmake -S . -B build -GNinja             \
+              -DCMAKE_INSTALL_PREFIX=$pkgdir    \
+              ..
+    fi
+    ninja -C build
+}
+
+function install_fontforge {
+    ninja -C build install
+}
+
+## *** fontship
+
+function download_fontship {
+    git clone $pkgurl $pkgname
+}
+
+function update_fontship {
+    git pull --ff-only
+}
+
+function build_fontship {
+    (
+        set +euo pipefail
+        workon $pkgname
+        set -euo pipefail
+        pip install -U -r requirements.txt
+        ./bootstrap.sh
+        ./configure --prefix=$pkgdir
+        make
+    )
+}
+
+function install_fontship {
+    local -r bashcompletiondir=$pkgdatadir/bash-completions
+    make bashcompletiondir=$bashcompletiondir install
+}
+
+## *** girara
+
+function build_girara {
+    meson setup build --prefix $pkgdir
+    ninja -C build
+}
+
+function install_girara {
+    ninja -C build install
+}
+
+## *** Git
+
+function build_git {
+    make configure
+    CC='gcc-10' CXX='g++-10' FC='gfortran-10' ./configure --prefix=$pkgdir
+    make
+    make doc
+}
+
+function install_git {
+    make install
+    make install-doc install-html
+}
+
+## *** grml-etc-core
+
+function build_grml-etc-core {
+    cd doc
+    make
+    cd -
+}
+
+function install_grml-etc-core {
+    install -m 644 -D etc/vim/vimrc $cfgdir/.vimrc
+    install -m 644 -D etc/zsh/zshrc $cfgdir/.config/zsh/.zshrc
+    install -m 644 -D doc/grmlzshrc.5 $pkgmandir/man5/grmlzshrc.5
+}
+
+## *** libertinus
+
+function build_libertinus {
+    (
+        set +euo pipefail
+        workon fontship
+        set -euo pipefail
+        fontship make otf
+    )
+}
+
+function install_libertinus {
+    local -r tgtdir=$pkgfontsdir/$pkgname
+    install -m 644 -D -t $tgtdir *.otf
+}
+
+## *** libgit2
+
+function build_libgit2 {
+    cmake -S . -B build                         \
+          cmake -DCMAKE_INSTALL_PREFIX=$pkgdir  \
+          ..
+    cmake-build build
+}
+
+function install_libgit2 {
+    cmake-build build --target install
+}
+
+## *** GNU nano
+
+function build_nano {
+    ./autogen.sh
+    CC='gcc-10' CXX='g++-10' FC='gfortran-10' ./configure --prefix=$pkgdir
+    make
+}
+
+function install_nano {
+    make install
+}
+
+## *** ncurses
+
+function build_ncurses {
+    CC='gcc-10' CXX='g++-10' FC='gfortran-10' ./configure --prefix=$pkgdir
+    make
+}
+
+function install_ncurses {
+    make install
+}
+
+## *** noto-cjk
+
+function install_noto-cjk {
+    local -r tgtdir=$pkgfontsdir/$pkgname
+    mkdir -p $tgtdir
+    unzip -o ./Sans/NotoSansCJK.ttc.zip -d $tgtdir
+    cp -t $tgtdir ./Serif/*.ttc
+}
+
+## *** noto-emoji
+
+function install_noto-emoji {
+    local -r tgtdir=$pkgfontsdir/$pkgname
+    install -m 644 -D -t $tgtdir ./fonts/*.ttf~*WindowsCompatible*.ttf
+}
+
+## *** noto-fonts
+
+function install_noto-fonts {
+    local -r tgtdir=$pkgfontsdir/$pkgname
+    mkdir -p $( dirname $tgtdir )
+    rsync -avum --delete --delete-excluded      \
+          --include='/**/'                      \
+          --include='/**/*.ttf'                 \
+          --exclude='*'                         \
+          ./hinted/ttf/ $tgtdir
+}
+
+## *** otfcc
+
+function build_otfcc {
+    premake5 ninja
+    ninja -C build/ninja otfccbuild_release_x64 otfccdump_release_x64
+}
+
+function install_otfcc {
+    install -m 755 -D -t $pkgbindir bin/release-x64/otfcc{build,dump}
+}
+
+## *** password-store
+
+function install_password-store {
+    make PREFIX=$pkgdir WITH_ZSHCOMP=yes install
+}
+
+## *** polybar
+
+function download_polybar {
+    git clone --recursive $pkgurl $pkgname
+}
+
+function update_polybar {
+    git pull --ff-only
+    git submodule update --remote
+}
+
+function build_polybar {
+    (
+        if whence -w pyenv >/dev/null ; then
+            eval "$( pyenv init - )"
+            # We have to use the system's Python installation due to
+            # polybar's dependency on xcbgen.  We therefore need to
+            # remove pyenv's prefix from LD_LIBRARY_PATH and
+            # PKG_CONFIG_PATH.
+            local -TU PYENV_PREFIX pyenv_prefix
+            PYENV_PREFIX=$( pyenv prefix )
+            local -ra pyenv_libdir=( ${^pyenv_prefix}/lib )
+            local -ra pyenv_pkgconfigdir=( ${^pyenv_libdir}/pkgconfig )
+            ld_library_path=${ld_library_path:|pyenv_libdir}
+            pkg_config_path=${pkg_config_path:|pyenv_pkgconfigdir}
+            pyenv shell system
+        fi
+        cmake -S . -B build -DCMAKE_INSTALL_PREFIX=$pkgdir ..
+        make -C build
+    )
+}
+
+function install_polybar {
+    make -C build install
+}
+
+## *** premake5
+
+function build_premake5 {
+    if [[ -v commands[premake5] ]] ; then
+        ${commands[premake5]} gmake2
+        make
+    else
+        make -f Bootstrap.mak linux
+    fi
+}
+
+function install_premake5 {
+    install -m 755 -D -t $pkgbindir bin/release/premake5
+}
+
+## *** pyenv
+
+function install_pyenv {
+    local -r tgtdir=$cfgdir/.pyenv
+    local -ar excludes=(
+        '/.git'
+        '/.github'
+        '/pyenv.1'
+        '/shims'
+        '/version'
+        '/versions'
+        '/sources'
+        '/cache'
+        '/libexec/*.dylib'
+        '/src/Makefile'
+        '/src/*.o'
+        '/bats'
+        '/default-packages'
+        '/plugins/python-build'
+        '/plugins/*'
+    )
+    local -ar opts=( -avu --delete --exclude=${^excludes} )
+    install -m 644 -D -t $pkgmandir/man1 pyenv.1
+    mkdir -p $tgtdir
+    rsync "${opts[@]}" ./ $tgtdir
+}
+
+## *** rofi
+
+function download_rofi {
+    git clone --recursive $pkgurl $pkgname
+}
+
+function update_rofi {
+    git pull --ff-only
+    git submodule update --remote
+}
+
+function build_rofi {
+    meson setup build --prefix $pkgdir
+    ninja -C build
+}
+
+function install_rofi {
+    ninja -C build install
+}
+
+## *** stow
+
+function build_stow {
+    autoreconf -iv
+    ./configure --prefix=$pkgdir
+}
+
+function install_stow {
+    make install
+}
+
+## *** tmux
+
+function build_tmux {
+    ./autogen.sh
+    ./configure --prefix=$pkgdir
+    make
+}
+
+function install_tmux {
+    make install
+}
+
+## *** vim
+
+function build_vim {
+    CC='gcc-10' CXX='g++-10' FC='gfortran-10'   \
+      ./configure --prefix=$pkgdir              \
+                  --with-features=huge          \
+                  --enable-multibyte            \
+                  --enable-luainterp=yes        \
+                  --enable-perlinterp=yes       \
+                  --enable-python3interp=yes    \
+                  --enable-rubyinterp=yes       \
+                  --enable-tclinterp=yes        \
+                  --enable-gui=gtk3             \
+                  --enable-cscope
+    make
+}
+
+function install_vim {
+    make -j1 install
+}
+
+function pre_stow_vim {
+    local altname altlink altslavename altslavelink
+    for altname in editor vi ; do
+        altlink=$pkgbindir/$altname
+        altslavename=$altname.1
+        altslavelink=$pkgmandir/man1/$altslavename
+        update-alternatives                                             \
+            --altdir $altdir --admindir $admindir                       \
+            --install $altlink $altname $pkgbindir/vim 50               \
+            --slave $altslavelink $altslavename $pkgmandir/man1/vim.1
+    done
+}
+
+### *** zathura
+
+function patch_zathura {
+    git apply $patchdir/*.patch
+}
+
+function build_zathura {
+    meson setup build --prefix $pkgdir
+    ninja -C build
+}
+
+function install_zathura {
+    ninja -C build install
+}
+
+### *** zathura-pdf-poppler
+
+function build_zathura-pdf-poppler {
+    meson setup build --prefix $pkgdir
+    ninja -C build
+}
+
+function install_zathura-pdf-poppler {
+    ninja -C build install
+}
+
+### *** zsh
+
+function build_zsh {
+    ./Util/preconfig
+    ./configure --prefix=$pkgdir --enable-pcre
+    make
+}
+
+function install_zsh {
+    make install install.info
+}
+
+## * SVN packages
+
+typeset -Ar pkgurls_svn=(
+    R 'https://svn.r-project.org/R/tags/R-4-0-5/'
+)
+
+## ** Function to download (checkout) a SVN package
+
+function generic_download_svn {
+    svn checkout $pkgurl $pkgname
+}
+
+## ** Function to update a SVN package
+
+function generic_update_svn {
+    svn update
+}
+
+## ** Package-specific functions
+
+## *** R
+
+function build_R {
+    ./tools/rsync-recommended
+    CC='gcc-10' CXX='g++-10' FC='gfortran-10' \
+      ./configure --prefix=$pkgdir
+    make
+    make info pdf
+}
+
+function install_R {
+    make install
+    make install-info install-pdf
+}
+
+## * rsync packages
+
+typeset -Ar pkgurls_rsync=(
+    libsynctex 'tug.org::tldevsrc/Build/source/'
+)
+
+typeset -ar rsyncopts_libsynctex=(
+    -avu --delete
+    --exclude='./svn'
+    --exclude='work/'
+)
+
+function generic_rsync {
+    if [[ $# -ne 1 ]] ; then
+        >&2 printf '%s\n' "Usage: $0 DEST"
+        return 2
+    fi
+    local -r dest=$1
+    local -r varname_rsyncopts=rsyncopts_$pkgname
+    if [[ -v $varname_rsyncopts ]] ; then
+        rsync "${${(P)varname_rsyncopts}[@]}" $pkgurl $dest
+    else
+        rsync --avu --delete $pkgurl $dest
+    fi
+}
+
+## ** Function to download an rsync package
+
+function generic_download_rsync {
+    generic_rsync $pkgname
+}
+
+## ** Function to update an rsync package
+
+function generic_update_rsync {
+    generic_rsync .
+}
+
+## ** Package-specific functions
+
+## *** libsynctex
+
+function build_libsynctex {
+    mkdir -p work
+    cd work
+    ../configure --prefix=$pkgdir               \
+                 --disable-native-texlive-build \
+                 --disable-all-pkgs             \
+                 --disable-static               \
+                 --enable-shared                \
+                 --enable-synctex               \
+                 --with-system-harfbuzz         \
+                 --with-system-icu              \
+                 --with-system-teckit           \
+                 --with-system-graphite2        \
+                 --with-system-zziplib          \
+                 --with-system-mpfr             \
+                 --with-system-gmp              \
+                 --with-system-cairo            \
+                 --with-system-pixman           \
+                 --with-system-gd               \
+                 --with-system-freetype2        \
+                 --with-system-libpng           \
+                 --with-system-libpaper         \
+                 --with-system-zlib             \
+                 --with-system-ptexenc          \
+                 --with-system-kpathsea
+    make
+    cd -
+}
+
+function install_libsynctex {
+    cd work
+    make -C texk/web2c                          \
+         install-pkgconfigDATA                  \
+         install-syncincludeHEADERS             \
+         install-libLTLIBRARIES
+    cd -
+}
+
+## * Main program
+
+function process_pkg {
+    local -r pkgdir=$pkgstowdir/$pkgname        \
+             cfgdir=$cfgstowdir/$pkgname        \
+             patchdir=$patchrootdir/$pkgname
+    local -r pkgbindir=$pkgdir/bin              \
+             pkgdatadir=$pkgdir/share
+    local -r pkgmandir=$pkgdatadir/man                          \
+             pkginfodir=$pkgdatadir/info                        \
+             pkgfontsdir=$pkgdatadir/fonts                      \
+             pkgapplicationsdir=$pkgdatadir/applications        \
+             pkgiconsdir=$pkgdatadir/icons/hicolor
+    local -i skipupdate=0
+
+    pkglogger "Starting to process"
+
+    if [[ ! -d $pkgname ]] ; then
+        pkglogger "Downloading"
+        [[ -v functions[download_$pkgname] ]] && download_$pkgname || generic_download_$pkgtype
+        skipupdate=1
+    fi
+
+    cd $pkgname
+
+    if ! (( skipupdate )) && [[ ! -v opts[-noupdate] ]] ; then
+        pkglogger "Updating"
+        [[ -v functions[update_$pkgname] ]] && update_$pkgname || generic_update_$pkgtype
+    fi
+
+    if [[ -v functions[patch_$pkgname] && ! -v opts[-noupdate] ]] ; then
+        pkglogger "Patching"
+        patch_$pkgname
+    fi
+
+    if [[ ! -v opts[-nobuild] && -v functions[build_$pkgname] ]] ; then
+        pkglogger "Building"
+        build_$pkgname
+    fi
+
+    pkglogger "Installing"
+    install_$pkgname
+
+    if [[ ! -v opts[-nostow] ]] ; then
+        pkglogger "Stowing"
+        if [[ -v functions[pre_stow_$pkgname] ]] ; then
+            pre_stow_$pkgname
+        fi
+        [[ -v functions[stow_$pkgname] ]] && stow_$pkgname || generic_stow
+        if [[ -v functions[post_stow_$pkgname] ]] ; then
+            post_stow_$pkgname
+        fi
+    fi
+
+    pkglogger "Done processing package"
+    cd -
+}
+
+cd $srcrootdir
+for pattern in $@ ; do
+    for pkgname pkgtype in ${(kv)pkgs[(I)$pattern]} ; do
+        varname_pkgurls=pkgurls_$pkgtype
+        pkgurl=${${(P)varname_pkgurls}[$pkgname]}
+        process_pkg
+    done
+done
