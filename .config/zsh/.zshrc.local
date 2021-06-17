@@ -93,10 +93,10 @@ if [[ -v FZF_HOME ]] ; then
 fi
 
 ## * Completions for pip and pipenv
-if [[ -v commands[pyenv] ]] ; then
-    eval "$( ${commands[pyenv]} init - )"
-    eval "$( ${commands[pyenv]} exec pip completion --zsh )"
-    eval "$( ${commands[pyenv]} exec pipenv --completion )"
+if whence -w pyenv >/dev/null ; then
+    eval "$( pyenv init - )"
+    eval "$( pyenv exec pip completion --zsh )"
+    eval "$( pyenv exec pipenv --completion )"
 fi
 
 ## * Initialization of zoxide
