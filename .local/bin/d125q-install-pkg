@@ -283,6 +283,37 @@ function install_Iosevka {
     install -m 644 -D -t $tgtdir $srcdir/*.ttf
 }
 
+## *** Alacritty
+
+function build_alacritty {
+    cargo build --release
+}
+
+function install_alacritty {
+    install -m 755 -D target/release/alacritty -t $pkgbindir
+    gzip -c extra/alacritty.man >$pkgmandir/man1/alacritty.1.gz
+    install -m 644 -D extra/completions/_alacritty -t $cfgdir/zsh-functions
+    install -m 644 -D extra/logo/alacritty-term.svg \
+            $pkgiconsdir/64x64/apps/Alacritty.svg
+    desktop-file-install extra/linux/Alacritty.desktop \
+                         --dir=$pkgapplicationsdir
+}
+
+function pre_stow_alacritty {
+    local -r altname=x-terminal-emulator
+    local -r altlink=$pkgbindir/$altname altslavename=$altname.1.gz
+    local -r altslavelink=$pkgmandir/man1/$altslavename
+    update-alternatives                                                         \
+        --altdir $altdir --admindir $admindir                                   \
+        --install $altlink $altname $pkgbindir/alacritty 50                     \
+        --slave $altslavelink $altslavename $pkgmandir/man1/alacritty.1.gz
+}
+
+function post_stow_alacritty {
+    tic -xe alacritty,alacritty-direct extra/alacritty.info
+    update-desktop-database $applicationsdir
+}
+
 ## *** Check
 
 function build_check {
