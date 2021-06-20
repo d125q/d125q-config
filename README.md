@@ -6,8 +6,8 @@ software that I use.
 ## Installation
 
 Typically, one would use [Git][git-homepage] to clone the repository and [GNU
-Stow][stow-homepage] to install it.  A simple installation would consist of the
-following steps:
+Stow][gnu-stow-homepage] to install it.  A simple installation would consist of
+the following steps:
 
 ```console
 $ mkdir -p $HOME/stow
@@ -16,12 +16,48 @@ $ git clone -b master --depth 1 'git@github.com:d125q/d125q-config.git'
 $ stow d125q-config
 ```
 
+## Custom scripts
+
+- [`d125q-install-pkg`](#d125q-install-pkg)
+
+### `d125q-install-pkg`
+
+[`d125q-install-pkg`](.local/bin/d125q-install-pkg) is a script to build and
+install packages locally.  It relies on [GNU Stow][gnu-stow-homepage].
+
+``` console
+$ d125q-install-pkg -h
+Usage: d125q-install-pkg [OPTION]... PATTERN...
+Install packages whose names match PATTERN from their local
+repositories.
+Options:
+    -h, -help          display this help and exit
+    -x, -xtrace        enable tracing
+    -j N, -parallel N  use up to N concurrent jobs when building
+                       and installing packages
+    -noupdate          do not update any source code from the remote
+                       repositories
+    -nobuild           do not build any packages
+    -nostow            do not stow any installed files
+    -pkgstowdir DIR    stow directory to install packages to
+                           (default: $HOME/.local/stow)
+    -cfgstowdir DIR    stow directory to install configuration files to
+                           (default $HOME/stow)
+    -srcrootdir DIR    directory to download source code to
+                           (default: $HOME/.local/src)
+    -patchrootdir DIR  directory to include patches from
+                           (default: $HOME/.local/patches)
+    -altdir DIR        directory containing alternatives
+                           (default: $HOME/Alternatives)
+    -admindir DIR      directory containing administrative information
+                           (default: $HOME/.var/lib/dpkg)
+```
+
 ## Components
 
 - [Alacritty](.config/alacritty/alacritty.yml)
 - [fontconfig](.config/fontconfig)
 - [GNU Emacs](#gnu-emacs)
-- [`install-pkg`](#install-pkg)
 - [`latexmk`](#latexmk)
 - [PAM environment](#pam-environment)
 - [tmux](.tmux.conf)
@@ -33,9 +69,10 @@ $ stow d125q-config
 ### GNU Emacs
 
 - A recent version of GNU Emacs is required – feel free to build [from
-  source][gnu-emacs-repo].  (`install-pkg` can also help.)
+  source][gnu-emacs-repo].  ([`d125q-install-pkg`](#d125q-install-pkg) can also
+  help.)
 - The configuration is pretty big and opinionated.  It tries to follow the
-  official [key binding conventions][kbd-convs-doc].
+  official [key binding conventions][gnu-emacs-kbd-convs-doc].
   + [Ido][ido-doc] is used in conjunction with [Amx][amx-repo] and kept on the
     default key sequences.  It is primarily meant for operations where one
     already has a good overview of things and can get away with using the
@@ -45,13 +82,16 @@ $ stow d125q-config
     <kbd>Hyper</kbd>.)  For example, `helm-M-x` is bound to <kbd>H-x</kbd>,
     `helm-find-files` to <kbd>H-f</kbd>, and `helm-buffers-list` to
     <kbd>H-b</kbd>.
-  + Other custom key bindings use either the <kbd>Super</kbd> modified key,
-    <kbd>F5</kbd> through <kbd>F9</kbd> without any modifier keys, or the usual
-    <kbd>C-c letter</kbd> user-reserved key sequences.  (Where <kbd>letter</kbd>
-    is either upper or lower case.)
+  + Packages other than [Helm][helm-repo] use the <kbd>Super</kbd> modifier
+    key.  For example, `deadgrep` and `rg-menu` are bound to <kbd>s-[</kbd> and
+    <kbd>s-]</kbd>, respectively.
+  + Custom key bindings for built-in commands use the usual <kbd>C-c
+    letter</kbd> key sequences or <kbd>F5</kbd> through <kbd>F9</kbd> without
+    any modifier keys.  (Where <kbd>letter</kbd> is either upper or lower case.)
+    For example, `ibuffer` is bound to <kbd>C-c b</kbd>.
   + Key sequences used by the window manager should not be touched by GNU Emacs
     and vice versa.
-- Code should be autoloaded as much as possible.
+- Code should be autoloaded whenever possible.
 - The [`lisp` directory](.config/emacs/lisp) contains a few custom libraries
   that are required.  To extract autoloads:
   ```console
@@ -65,38 +105,11 @@ $ stow d125q-config
     INFO     Scraping files for d125q-loaddefs.el...
     INFO     Scraping files for d125q-loaddefs.el...done
   ```
-  If the autoloads are not present, they will be loaded eagerly.  To clean the
-  autoloads, run `make clean`.
+  If the autoloads are not present, the files will be loaded eagerly.  To clean
+  the autoloads, run `make clean`.
 - GNU Emacs should be run as a daemon using its systemd service.  There is
   additionally a [drop-in](.config/systemd/user/emacs.service.d/override.conf)
   to set the correct environment.
-
-### `install-pkg`
-
-[`install-pkg`](.local/bin/install-pkg) is a script to build and install
-packages locally.  It relies on [GNU Stow][stow-homepage].
-
-``` console
-$ install-pkg -h
-Usage: install-pkg [OPTION]... PATTERN...
-Install packages whose names match PATTERN from their local repositories.
-Options:
-    -h, -help          display this help and exit
-    -j N, -parallel N  use up to N concurrent jobs when building packages
-    -noupdate          do not update from the remote repositories
-    -nobuild           do not build the packages
-    -nostow            do not stow the packages or their configuration files
-    -pkgdir DIR        directory where packages will be installed
-                           (default: $HOME/.local/stow)
-    -cfgdir DIR        directory where configuration files will be installed
-                           (default: $HOME/stow)
-    -srcdir DIR        directory containing the local repositories
-                           (default: $HOME/.local/src)
-    -altdir DIR        directory containing the alternatives
-                           (default: $HOME/Alternatives)
-    -admindir DIR      directory containing the administrative information
-                           (default: $HOME/.var/lib/dpkg)
-```
 
 ### `latexmk`
 
@@ -117,7 +130,7 @@ the entire PAM session.
 ### Vim
 
 - A recent version of Vim is required – feel free to build [from
-  source][vim-repo].  (`install-pkg` can also help.)
+  source][vim-repo].  ([`d125q-install-pkg`](#d125q-install-pkg) can also help.)
 - `.vimrc` should come from [grml-etc-core][grml-etc-core-repo].
 - Local changes go to `.vimrc.local` instead.
 - Included plugins:
@@ -127,20 +140,20 @@ the entire PAM session.
 ### Zsh
 
 - A recent version of Zsh is required – feel free to build [from
-  source][zsh-repo].  (`install-pkg` can also help.)
+  source][zsh-repo].  ([`d125q-install-pkg`](#d125q-install-pkg) can also help.)
 - `ZDOTDIR` should be configured to point to `$HOME/.config/zsh`.
 - `.zshrc` should come from [grml-etc-core][grml-etc-core-repo].
 - Local changes to go `.zshrc.pre` and `.zshrc.local` instead.
 
 
-[amx-repo]: https://github.com/DarwinAwardWinner/amx "Git repository of Amx"
 [git-homepage]: https://git-scm.com/ "Homepage of Git"
+[gnu-stow-homepage]: https://www.gnu.org/software/stow/ "Homepage of GNU Stow"
 [gnu-emacs-repo]: https://github.com/emacs-mirror/emacs "Git repository of GNU Emacs"
+[gnu-emacs-kbd-convs-doc]: https://www.gnu.org/software/emacs/manual/html_node/elisp/Key-Binding-Conventions.html "Key bindings conventions for GNU Emacs"
+[ido-doc]: https://www.gnu.org/software/emacs/manual/html_mono/ido.html "HTML documentation for Ido"
+[amx-repo]: https://github.com/DarwinAwardWinner/amx "Git repository of Amx"
+[helm-repo]: https://github.com/emacs-helm/helm/ "Git repository of Helm"
 [grml-etc-core-repo]: https://github.com/grml/grml-etc-core "Git repository of grml-etc-core"
 [gruvbox-repo]: https://github.com/briemens/gruvbox "Git repository of Gruvbox"
-[helm-repo]: https://github.com/emacs-helm/helm/ "Git repository of Helm"
-[ido-doc]: https://www.gnu.org/software/emacs/manual/html_mono/ido.html "HTML documentation for Ido"
-[kbd-convs-doc]: https://www.gnu.org/software/emacs/manual/html_node/elisp/Key-Binding-Conventions.html "Key bindings conventions for GNU Emacs"
-[stow-homepage]: https://www.gnu.org/software/stow/ "Homepage of GNU Stow"
 [vim-repo]: https://github.com/vim/vim "Git repository of Vim"
 [zsh-repo]: https://github.com/zsh-users/zsh "Git repository of Zsh"
