@@ -3,7 +3,7 @@
 ## * Usage
 
 read -r -d '' usage <<EOF
-Usage: $0 [OPTION]... PATTERN...
+Usage: $( basename $0 ) [OPTION]... PATTERN...
 Install packages whose names match PATTERN from their local
 repositories.
 Options:
