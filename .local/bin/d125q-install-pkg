@@ -292,7 +292,7 @@ function build_alacritty {
 function install_alacritty {
     install -m 755 -D target/release/alacritty -t $pkgbindir
     gzip -c extra/alacritty.man >$pkgmandir/man1/alacritty.1.gz
-    install -m 644 -D extra/completions/_alacritty -t $cfgdir/zsh-functions
+    install -m 644 -D extra/completions/_alacritty -t $zdotdir/zsh-functions
     install -m 644 -D extra/logo/alacritty-term.svg \
             $pkgiconsdir/64x64/apps/Alacritty.svg
     desktop-file-install extra/linux/Alacritty.desktop \
@@ -466,7 +466,7 @@ function build_grml-etc-core {
 
 function install_grml-etc-core {
     install -m 644 -D etc/vim/vimrc $cfgdir/.vimrc
-    install -m 644 -D etc/zsh/zshrc $cfgdir/.config/zsh/.zshrc
+    install -m 644 -D etc/zsh/zshrc $zdotdir/.zshrc
     install -m 644 -D doc/grmlzshrc.5 $pkgmandir/man5/grmlzshrc.5
 }
 
@@ -888,6 +888,7 @@ function process_pkg {
              pkgfontsdir=$pkgdatadir/fonts                      \
              pkgapplicationsdir=$pkgdatadir/applications        \
              pkgiconsdir=$pkgdatadir/icons/hicolor
+    local -r zdotdir=$cfgdir/$( realpath --relative-to=$HOME ${ZDOTDIR:-$HOME} )
     local -i skipupdate=0
 
     pkglogger "Starting to process"
