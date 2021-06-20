@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210617124658
+;; Version: 20210620082953
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -318,8 +318,8 @@ will be used for this purpose."
     (user-error "No recent files to choose from")))
 
 (d125q-bind-keys (:map recentf-mode-map)
-  "s-r" recentf-open-files
-  "s-R" d125q-recentf-find-file)
+  "C-c r" recentf-open-files
+  "C-c R" d125q-recentf-find-file)
 
 ;; * Server
 
@@ -365,7 +365,7 @@ will be used for this purpose."
 (browse-kill-ring-default-keybindings)
 
 (d125q-bind-keys ()
-  "s-k" kill-whole-line)
+  "C-c k" kill-whole-line)
 
 ;; ** Jumping to things
 
@@ -393,7 +393,7 @@ will be used for this purpose."
  imenu-use-popup-menu nil)
 
 (d125q-bind-keys ()
-  "s-i" imenu)
+  "C-c i" imenu)
 
 ;; ** `expand-region'
 
@@ -406,7 +406,7 @@ will be used for this purpose."
  ibuffer-eliding-string "…")
 
 (d125q-bind-keys ()
-  "s-b" ibuffer)
+  "C-c b" ibuffer)
 
 ;; * `which-key'
 
@@ -434,7 +434,7 @@ will be used for this purpose."
  speedbar-vebosity-level 0)
 
 (d125q-bind-keys ()
-  "<f5>" speedbar)
+  "C-c s" speedbar)
 
 ;; * The Customization interface
 
@@ -447,7 +447,7 @@ will be used for this purpose."
  custom-unlispify-tag-names nil
  custom-variable-default-form 'lisp)
 
-(d125q-bind-keys (:prefix "<f6>")
+(d125q-bind-keys (:prefix "<f5>")
   "a" customize-apropos
   "f" customize-face
   "4 f" customize-face-other-window
@@ -589,7 +589,7 @@ will be used for this purpose."
  python-indent-guess-indent-offset-verbose nil
  python-shell-prompt-detect-failure-warning nil)
 
-(d125q-bind-keys (:prefix "<f7>")
+(d125q-bind-keys (:prefix "s-v")
   "w" pyvenv-workon
   "a" pyvenv-activate
   "d" pyvenv-deactivate
