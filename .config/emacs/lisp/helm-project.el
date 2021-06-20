@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210617124828
+;; Version: 20210620081807
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -197,21 +197,23 @@ non-nil, the action is automatically defined.
  ("VC-Dir" vc-dir)
  ("Dired" dired)
  ("Find file" find-file)
- ("Browse project" helm-browse-project)
- ("Find files (Helm)" helm-find-files)
- ("Find files (Helm) in project" helm-project-find-files)
- ("List buffers in project" helm-project-list-buffers)
+ ("(Helm) Find files" helm-find-files)
+ ("(Helm) Browse project" helm-browse-project)
+ ("(Helm) Find files in project" helm-project-find-files)
+ ("(Helm) List buffers in project" helm-project-list-buffers)
+ ("(Helm) Search for regexp" helm-project-grep)
  ("Remove from project list" remove-from-project-list :skip-action-def t)
  ("Start shell" project-shell)
  ("Start Eshell" project-eshell)
+ ("Compile" project-compile)
  ("Find regexp" project-find-regexp)
- ("Run `grep'" grep)
- ("Run `lgrep'" lgrep)
- ("Run `rgrep'" rgrep)
- ("Run `zrgrep'" zrgrep)
- ("Run `vc-git-grep'" vc-git-grep)
- ("Run `rg-project'" rg-project)
- ("Run `deadgrep'" deadgrep))
+ ("Search with `rg-project'" rg-project)
+ ("Search with `deadgrep'" deadgrep)
+ ("Search with `grep'" grep)
+ ("Search with `lgrep'" lgrep)
+ ("Search with `rgrep'" rgrep)
+ ("Search with `zrgrep'" zrgrep)
+ ("Search with `vc-git-grep'" vc-git-grep))
 
 ;; ** :action-transformer
 
@@ -287,15 +289,16 @@ non-nil, the runner is defined automatically.
  ("C-x C-f" find-file)
  ("H-f" helm-find-files)
  ("H-<return>" helm-browse-project)
+ ("H-p f" helm-project-find-files)
+ ("H-p b" helm-project-list-buffers)
+ ("H-p g" helm-project-grep)
+ ("C-c C-d" remove-from-project-list :skip-runner-def t)
+ ("C-c C-s" project-shell)
+ ("C-c C-e" project-eshell)
+ ("C-c C-c" project-compile)
+ ("C-c C-s" project-find-regexp)
  ("s-[" deadgrep)
  ("s-]" rg-project)
- ("C-c f" helm-project-find-files)
- ("C-c b" helm-project-list-buffers)
- ("C-c g" helm-project-grep)
- ("C-c d" remove-from-project-list :skip-runner-def t)
- ("C-c s" project-shell)
- ("C-c e" project-eshell)
- ("C-c c" project-compile)
  ("M-s g" grep)
  ("M-s l" lgrep)
  ("M-s r" rgrep)
