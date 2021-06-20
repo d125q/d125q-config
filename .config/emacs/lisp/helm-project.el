@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 Dario Gjorgjevski
 
 ;; Author: Dario Gjorgjevski <dario.gjorgjevski@gmail.com>
-;; Version: 20210620081807
+;; Version: 20210620081934
 ;; Keywords: convenience
 
 ;;; Commentary:
@@ -51,15 +51,15 @@
    (persistent-help
     :initform "View candidate or kill its buffer")
    (help-message
-    :initform helm-ff-help-message)
+    :initform 'helm-ff-help-message)
    (action
-    :initform helm-find-files-actions)
+    :initform 'helm-find-files-actions)
    (action-transformer
     :initform #'helm-find-files-action-transformer)
    (keymap
-    :initform helm-find-files-map)
+    :initform 'helm-find-files-map)
    (candidate-number-limit
-    :initform helm-ff-candidate-number-limit)
+    :initform 'helm-ff-candidate-number-limit)
    (mode-line
     :initform (list "file(s)" helm-mode-line-string))
    (volatile
@@ -321,7 +321,7 @@ non-nil, the runner is defined automatically.
    (persistent-help
     :initform "Magit if possible, else (C-u to force) VC-Dir")
    (keymap
-    :initform helm-project--sp-map)
+    :initform 'helm-project--sp-map)
    (volatile
     :initform t)
    (migemo
